@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Flatnest — Animated Loaders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky-top: #EAF4F5;
+      --sky: #DCEBED;
+      --sky-deep: #C7DDE1;
+      --outline: #B7D2D7;
+      --white: #FFFFFF;
+      --window-mid: #A9D8DE;
+      --cloud: #F5FAFB;
+      --pin: #F36B6B;
+      --pin-deep: #E25555;
+      --pin-halo: #F9D6D6;
+      --ink: #3F5A60;
+      --ink-soft: #7A969C;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; font-family: 'Quicksand', system-ui, sans-serif; color: var(--ink); background: var(--sky-top); }
+    body {
+      background:
+        radial-gradient(1200px 600px at 50% -100px, #ffffff 0%, transparent 60%),
+        linear-gradient(180deg, var(--sky-top) 0%, var(--sky) 100%);
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 56px 32px 96px; }
+    header { text-align: center; margin-bottom: 48px; }
+    .eyebrow {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--ink-soft); margin-bottom: 12px;
+    }
+    h1 { font-weight: 700; font-size: 44px; letter-spacing: -0.02em; margin: 0 0 12px; }
+    .sub { color: var(--ink-soft); font-size: 16px; font-weight: 500; max-width: 620px; margin: 0 auto; line-height: 1.5; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 22px;
+    }
+    .card {
+      background: var(--white); border: 1px solid #d9e6e9; border-radius: 22px;
+      padding: 24px; display: flex; flex-direction: column; gap: 16px;
+      box-shadow: 0 12px 30px -16px rgba(43, 68, 72, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 22px 44px -22px rgba(43,68,72,0.25); }
+    .stage {
+      aspect-ratio: 1 / 1; border-radius: 16px;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky) 100%);
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--outline);
+      overflow: hidden;
+    }
+    .stage img { width: 80%; height: 80%; }
+    .meta { display: flex; flex-direction: column; gap: 4px; }
+    .name { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+    .desc { color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+    .row {
+      display: flex; gap: 8px; margin-top: 4px;
+    }
+    .btn {
+      flex: 1; appearance: none; border: 0; cursor: pointer; font-family: inherit;
+      font-weight: 600; font-size: 13px; padding: 10px 12px; border-radius: 12px;
+      letter-spacing: 0.02em;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--pin); color: white; }
+    .btn-primary:hover { background: var(--pin-deep); }
+    .btn-ghost { background: #EEF6F7; color: var(--ink); }
+    .btn-ghost:hover { background: #E1EDEF; }
+
+    /* dark stage option toggled per-card */
+    .stage.dark {
+      background: linear-gradient(180deg, #1F3338 0%, #142226 100%);
+      border-color: #2a4549;
+    }
+
+    /* Usage section */
+    .usage {
+      margin-top: 64px; background: white; border-radius: 22px; padding: 28px 32px;
+      border: 1px solid #d9e6e9;
+    }
+    .usage h2 { margin: 0 0 8px; font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+    .usage p { margin: 0 0 18px; color: var(--ink-soft); font-size: 14px; }
+    .snips { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .snip {
+      background: #0E1A1D; color: #DCEBED; border-radius: 14px;
+      font-family: ui-monospace, Menlo, Monaco, monospace; font-size: 12px; line-height: 1.6;
+      padding: 16px 18px; white-space: pre; overflow-x: auto;
+    }
+    .snip .h { color: #7FB6BD; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      display: block; font-size: 10px; margin-bottom: 8px; }
+    .snip .k { color: #F9C46A; }
+    .snip .s { color: #F9D6D6; }
+    .snip .c { color: #6B8084; font-style: italic; }
+
+    /* toolbar to flip backgrounds */
+    .toolbar {
+      display: flex; gap: 10px; justify-content: center; margin: -8px 0 32px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      appearance: none; border: 1px solid var(--outline); background: white;
+      padding: 8px 16px; border-radius: 999px; font-family: inherit; font-weight: 600;
+      font-size: 13px; color: var(--ink); cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip:hover { background: var(--sky); }
+    .chip.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+    footer {
+      margin-top: 56px; text-align: center; color: var(--ink-soft); font-size: 13px;
+    }
+    footer a { color: var(--pin); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Flatnest · animated svg</div>
+      <h1>Loaders that feel like home</h1>
+      <p class="sub">Six self-contained SVG loaders in the Flatnest palette. No libraries, no JSON, no fonts. Drop into web, React, React&nbsp;Native (in a WebView) or Android/iOS as a raw asset.</p>
+    </header>
+
+    <div class="toolbar">
+      <button class="chip active" data-bg="light">Light background</button>
+      <button class="chip" data-bg="dark">Dark background</button>
+      <button class="chip" data-bg="paper">Paper background</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <section class="usage">
+      <h2>How to use</h2>
+      <p>Each loader is a single .svg file with embedded SMIL animation — works without any runtime.</p>
+      <div class="snips">
+        <div class="snip"><span class="h">HTML</span><span class="c">&lt;!-- as an image --&gt;</span>
+<span class="k">&lt;img</span> <span class="k">src</span>=<span class="s">"loaders/pin-bounce.svg"</span>
+     <span class="k">width</span>=<span class="s">"96"</span> <span class="k">alt</span>=<span class="s">"Loading"</span><span class="k">/&gt;</span></div>
+
+        <div class="snip"><span class="h">React</span><span class="k">import</span> Loader <span class="k">from</span>
+  <span class="s">'./loaders/pin-bounce.svg'</span>;
+
+&lt;<span class="k">img</span> <span class="k">src</span>={Loader}
+     <span class="k">width</span>={<span class="s">96</span>}
+     <span class="k">alt</span>=<span class="s">"Loading"</span> /&gt;</div>
+
+        <div class="snip"><span class="h">React Native</span><span class="c">// requires react-native-svg-transformer</span>
+<span class="k">import</span> Loader <span class="k">from</span>
+  <span class="s">'./loaders/pin-bounce.svg'</span>;
+
+&lt;<span class="k">Loader</span> <span class="k">width</span>={<span class="s">96</span>}
+        <span class="k">height</span>={<span class="s">96</span>} /&gt;</div>
+
+        <div class="snip"><span class="h">Inline (full control)</span><span class="c">// Paste the &lt;svg&gt; markup
+// directly into JSX/HTML.
+// SMIL animations play
+// automatically.</span></div>
+      </div>
+    </section>
+
+    <footer>
+      Want a Lottie JSON version instead? — <a href="#" id="lottie-link">just ask</a>
+    </footer>
+  </div>
+
+  <script>
+    const LOADERS = [
+      {
+        file: 'pin-bounce.svg',
+        name: 'Pin bounce',
+        desc: 'Coral pin drops, squashes on landing, bounces. Ground shadow scales in sync.',
+      },
+      {
+        file: 'windows-light.svg',
+        name: 'Windows lighting up',
+        desc: 'Apartment façade where each window lights up in sequence, like the building is coming home.',
+      },
+      {
+        file: 'radar-pulse.svg',
+        name: 'Radar pulse',
+        desc: 'Pin in the centre with three staggered coral rings rippling outward — feels like a GPS lock.',
+      },
+      {
+        file: 'cloud-swing.svg',
+        name: 'Cloud swing',
+        desc: 'A puffy cloud drifts left-right while a pin dangles from it on a dashed string, swinging gently.',
+      },
+      {
+        file: 'skyline-rise.svg',
+        name: 'Skyline rises',
+        desc: 'Three buildings rise from the ground line in a staggered loop. The tallest carries the pin.',
+      },
+      {
+        file: 'orbit-dots.svg',
+        name: 'Orbit dots',
+        desc: 'A classic spinner reimagined: a coral pin at centre, mint dots orbiting around it.',
+      },
+    ];
+
+    const grid = document.getElementById('grid');
+    LOADERS.forEach(L => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="stage">
+          <img src="loaders/${L.file}" alt="${L.name}"/>
+        </div>
+        <div class="meta">
+          <div class="name">${L.name}</div>
+          <div class="desc">${L.desc}</div>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" data-action="download" data-file="${L.file}">Download SVG</button>
+          <button class="btn btn-ghost" data-action="copy" data-file="${L.file}">Copy markup</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Background toggle
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const bg = chip.dataset.bg;
+        document.querySelectorAll('.stage').forEach(s => {
+          s.classList.remove('dark');
+          if (bg === 'dark') {
+            s.classList.add('dark');
+          } else if (bg === 'paper') {
+            s.style.background = '#F4EFE2';
+            s.style.borderColor = '#D6CFB7';
+          } else {
+            s.style.background = '';
+            s.style.borderColor = '';
+          }
+        });
+      });
+    });
+
+    // Download + copy
+    grid.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const file = btn.dataset.file;
+      const url = `loaders/${file}`;
+      if (btn.dataset.action === 'download') {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else if (btn.dataset.action === 'copy') {
+        try {
+          const res = await fetch(url);
+          const text = await res.text();
+          await navigator.clipboard.writeText(text);
+          const old = btn.textContent;
+          btn.textContent = 'Copied ✓';
+          setTimeout(() => { btn.textContent = old; }, 1400);
+        } catch (err) {
+          alert('Copy failed — try Download instead.');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

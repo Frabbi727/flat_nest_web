@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>Flatnest loader · windows lighting up</title>
+  
+  <rect x="46" y="40" width="108" height="140" rx="10" fill="#FFFFFF" stroke="#B7D2D7" stroke-width="3"></rect>
+  
+  <rect x="46" y="40" width="108" height="6" fill="#B7D2D7" opacity="0.3"></rect>
+  
+  <rect x="60" y="56" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="88" y="56" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="116" y="56" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="60" y="86" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="88" y="86" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="116" y="86" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="60" y="116" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="88" y="116" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="116" y="116" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="60" y="146" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="88" y="146" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect><rect x="116" y="146" width="20" height="22" rx="4" fill="#A9D8DE">
+      
+    </rect>
+  
+  <rect x="88" y="148" width="24" height="32" rx="4" fill="#A9D8DE"></rect>
+</svg>

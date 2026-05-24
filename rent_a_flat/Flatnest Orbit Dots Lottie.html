@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Flatnest — Orbit Dots · Lottie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky-top: #EAF4F5; --sky: #DCEBED; --outline: #B7D2D7;
+      --pin: #F36B6B; --pin-deep: #E25555;
+      --ink: #3F5A60; --ink-soft: #7A969C;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; font-family: 'Quicksand', system-ui, sans-serif; color: var(--ink); }
+    body {
+      background:
+        radial-gradient(1200px 600px at 50% -100px, #fff 0%, transparent 60%),
+        linear-gradient(180deg, var(--sky-top) 0%, var(--sky) 100%);
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 32px 96px; }
+    header { text-align: center; margin-bottom: 40px; }
+    .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+    h1 { font-weight: 700; font-size: 40px; letter-spacing: -0.02em; margin: 0 0 12px; }
+    .sub { color: var(--ink-soft); font-size: 16px; max-width: 620px; margin: 0 auto 0; line-height: 1.5; font-weight: 500; }
+
+    .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px; }
+    .card {
+      background: white; border-radius: 22px; border: 1px solid #d9e6e9;
+      padding: 22px; box-shadow: 0 12px 30px -16px rgba(43, 68, 72, 0.15);
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+    }
+    .stage {
+      width: 100%; aspect-ratio: 1 / 1; border-radius: 14px;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky) 100%);
+      border: 1px solid var(--outline);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stage.dark { background: linear-gradient(180deg, #1F3338 0%, #142226 100%); border-color: #2a4549; }
+    .stage.paper { background: #F4EFE2; border-color: #D6CFB7; }
+    .stage.white { background: white; border-color: #e8eff1; }
+    .label { font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: var(--ink-soft); text-transform: uppercase; }
+    .actions {
+      display: flex; gap: 10px; justify-content: center; margin-top: 28px; flex-wrap: wrap;
+    }
+    .btn {
+      appearance: none; border: 0; cursor: pointer; font-family: inherit;
+      font-weight: 600; font-size: 14px; padding: 12px 22px; border-radius: 12px;
+    }
+    .btn-primary { background: var(--pin); color: white; }
+    .btn-primary:hover { background: var(--pin-deep); }
+    .btn-ghost { background: white; color: var(--ink); border: 1px solid var(--outline); }
+    .btn-ghost:hover { background: var(--sky-top); }
+
+    .usage {
+      margin-top: 56px; background: white; border-radius: 22px; padding: 28px 32px;
+      border: 1px solid #d9e6e9;
+    }
+    .usage h2 { margin: 0 0 6px; font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+    .usage p { margin: 0 0 18px; color: var(--ink-soft); font-size: 14px; }
+    .snips { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+    .snip {
+      background: #0E1A1D; color: #DCEBED; border-radius: 14px;
+      font-family: ui-monospace, Menlo, Monaco, monospace; font-size: 12px; line-height: 1.65;
+      padding: 16px 18px; white-space: pre; overflow-x: auto;
+    }
+    .snip .h { color: #7FB6BD; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      display: block; font-size: 10px; margin-bottom: 8px; }
+    .snip .k { color: #F9C46A; }
+    .snip .s { color: #F9D6D6; }
+    .snip .c { color: #6B8084; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">flatnest · lottie</div>
+      <h1>Orbit Dots — animated JSON</h1>
+      <p class="sub">Same loader you liked, exported as a Lottie animation. Works with lottie-web (browsers), lottie-react-native, lottie-ios, and lottie-android — same JSON file, every platform.</p>
+    </header>
+
+    <div class="row">
+      <div class="card">
+        <div class="stage" id="stage-light"></div>
+        <div class="label">light</div>
+      </div>
+      <div class="card">
+        <div class="stage white" id="stage-white"></div>
+        <div class="label">white</div>
+      </div>
+      <div class="card">
+        <div class="stage paper" id="stage-paper"></div>
+        <div class="label">paper</div>
+      </div>
+      <div class="card">
+        <div class="stage dark" id="stage-dark"></div>
+        <div class="label">dark</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="dl">Download orbit-dots.json</button>
+      <button class="btn btn-ghost" id="copy">Copy JSON to clipboard</button>
+    </div>
+
+    <section class="usage">
+      <h2>How to use</h2>
+      <p>The same JSON powers every platform via its respective Lottie player.</p>
+      <div class="snips">
+        <div class="snip"><span class="h">Web · lottie-web</span><span class="k">&lt;script</span> <span class="k">src</span>=<span class="s">"https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"</span><span class="k">&gt;&lt;/script&gt;</span>
+<span class="k">&lt;div</span> <span class="k">id</span>=<span class="s">"loader"</span> <span class="k">style</span>=<span class="s">"width:120px"</span><span class="k">&gt;&lt;/div&gt;</span>
+<span class="k">&lt;script&gt;</span>
+  lottie.loadAnimation({
+    container: document.getElementById(<span class="s">'loader'</span>),
+    renderer:  <span class="s">'svg'</span>,
+    loop:      <span class="k">true</span>,
+    autoplay:  <span class="k">true</span>,
+    path:      <span class="s">'orbit-dots.json'</span>
+  });
+<span class="k">&lt;/script&gt;</span></div>
+
+        <div class="snip"><span class="h">React · lottie-react</span><span class="k">import</span> Lottie <span class="k">from</span> <span class="s">'lottie-react'</span>;
+<span class="k">import</span> orbit  <span class="k">from</span> <span class="s">'./orbit-dots.json'</span>;
+
+<span class="k">function</span> <span class="k">Loader</span>() {
+  <span class="k">return</span> &lt;<span class="k">Lottie</span>
+    <span class="k">animationData</span>={orbit}
+    <span class="k">loop</span> <span class="k">style</span>={{ width: <span class="s">120</span> }} /&gt;;
+}</div>
+
+        <div class="snip"><span class="h">React Native · lottie-react-native</span><span class="k">import</span> LottieView <span class="k">from</span>
+  <span class="s">'lottie-react-native'</span>;
+
+&lt;<span class="k">LottieView</span>
+  <span class="k">source</span>={<span class="k">require</span>(<span class="s">'./orbit-dots.json'</span>)}
+  <span class="k">autoPlay</span> <span class="k">loop</span>
+  <span class="k">style</span>={{ width: <span class="s">120</span>, height: <span class="s">120</span> }} /&gt;</div>
+
+        <div class="snip"><span class="h">iOS · lottie-ios (SwiftUI)</span><span class="k">import</span> Lottie
+
+<span class="k">struct</span> Loader: View {
+  <span class="k">var</span> body: <span class="k">some</span> View {
+    LottieView(animation: .named(<span class="s">"orbit-dots"</span>))
+      .playing(loopMode: .loop)
+      .frame(width: <span class="s">120</span>, height: <span class="s">120</span>)
+  }
+}</div>
+
+        <div class="snip"><span class="h">Android · lottie-android (Compose)</span><span class="c">// Put orbit-dots.json in res/raw</span>
+<span class="k">val</span> composition <span class="k">by</span> rememberLottieComposition(
+  LottieCompositionSpec.RawRes(R.raw.orbit_dots)
+)
+LottieAnimation(
+  composition = composition,
+  iterations  = LottieConstants.IterateForever,
+  modifier    = Modifier.size(<span class="s">120</span>.dp)
+)</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script>
+    // Load the same JSON four times so you can preview the loop on different backgrounds.
+    ['light', 'white', 'paper', 'dark'].forEach(id => {
+      lottie.loadAnimation({
+        container: document.getElementById('stage-' + id),
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: 'loaders/orbit-dots.json'
+      });
+    });
+
+    document.getElementById('dl').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = 'loaders/orbit-dots.json';
+      a.download = 'orbit-dots.json';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    document.getElementById('copy').addEventListener('click', async (e) => {
+      try {
+        const res = await fetch('loaders/orbit-dots.json');
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        const btn = e.currentTarget;
+        const old = btn.textContent; btn.textContent = 'Copied ✓';
+        setTimeout(() => { btn.textContent = old; }, 1400);
+      } catch (err) { alert('Copy failed — use Download instead.'); }
+    });
+  </script>
+</body>
+</html>

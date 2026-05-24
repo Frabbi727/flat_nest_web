@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>Flatnest loader · radar pulse</title>
+  
+  <circle cx="100" cy="100" r="20" fill="none" stroke="#F36B6B" stroke-width="2" opacity="0">
+    
+    
+  </circle>
+  <circle cx="100" cy="100" r="20" fill="none" stroke="#F36B6B" stroke-width="2" opacity="0">
+    
+    
+  </circle>
+  <circle cx="100" cy="100" r="20" fill="none" stroke="#F36B6B" stroke-width="2" opacity="0">
+    
+    
+  </circle>
+  
+  <circle cx="100" cy="100" r="26" fill="#F9D6D6"></circle>
+  
+  <circle cx="100" cy="92" r="14" fill="#F36B6B">
+    
+  </circle>
+  <rect x="90" y="100" width="20" height="20" rx="5" fill="#F36B6B"></rect>
+</svg>
