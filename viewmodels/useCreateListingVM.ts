@@ -11,6 +11,13 @@ import type {
   OwnerInfoPayload,
 } from "@/types/api";
 
+// Helper to remove null/undefined values from objects to create "sparse payloads"
+function cleanPayload<T extends Record<string, any>>(payload: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([_, v]) => v !== null && v !== undefined && v !== "")
+  ) as Partial<T>;
+}
+
 export function useCreateListingVM() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -19,7 +26,7 @@ export function useCreateListingVM() {
 
   const step1Mutation = useMutation({
     mutationFn: (data: CreateListingStep1Payload) =>
-      listingWriteService.createDraft(data),
+      listingWriteService.createDraft(cleanPayload(data) as CreateListingStep1Payload),
     onSuccess: (listing) => {
       setDraftListingId(listing.id);
       setCurrentStep(2);
@@ -40,7 +47,7 @@ export function useCreateListingVM() {
     mutationFn: async (data: LocationPayload & { amenities?: number[] }) => {
       if (!draftListingId) throw new Error("No listing ID");
       const { amenities, ...locationData } = data;
-      await listingWriteService.saveLocation(draftListingId, locationData);
+      await listingWriteService.saveLocation(draftListingId, cleanPayload(locationData) as LocationPayload);
       if (amenities && amenities.length > 0) {
         await listingWriteService.updateListing(draftListingId, { amenities });
       }
@@ -52,7 +59,7 @@ export function useCreateListingVM() {
   const step4Mutation = useMutation({
     mutationFn: (data: OwnerInfoPayload) => {
       if (!draftListingId) throw new Error("No listing ID");
-      return listingWriteService.saveOwnerInfo(draftListingId, data);
+      return listingWriteService.saveOwnerInfo(draftListingId, cleanPayload(data) as OwnerInfoPayload);
     },
     onSuccess: () => setCurrentStep(5),
     onError: () =>

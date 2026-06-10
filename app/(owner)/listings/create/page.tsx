@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 import {
   createListingStep1Schema,
   locationSchema,
@@ -18,7 +19,7 @@ import { useCreateListingVM } from "@/viewmodels/useCreateListingVM";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
-import type { GeoItem, Amenity } from "@/types/api";
+import type { GeoItem, Amenity, ListingType } from "@/types/api";
 
 const LocationMapPicker = dynamic(
   () => import("@/components/owner/LocationMapPicker"),
@@ -188,6 +189,19 @@ const inputStyle: React.CSSProperties = {
   border: "1px solid #E5E7EB",
 };
 
+const selectStyle: React.CSSProperties = {
+    width: "100%",
+    height: 44,
+    borderRadius: 10,
+    border: "1px solid #E5E7EB",
+    padding: "0 12px",
+    fontSize: 14,
+    color: "#1C1C1E",
+    background: "#fff",
+    outline: "none",
+    cursor: "pointer",
+  };
+
 // ── Step 1: Basics ────────────────────────────────────────────────
 function Step1Basics({
   onSubmit,
@@ -200,33 +214,48 @@ function Step1Basics({
     resolver: zodResolver(createListingStep1Schema),
   });
 
+  const { data: listingTypes = [] } = useQuery<ListingType[]>({
+    queryKey: ["listing-types"],
+    queryFn: () => api.get("/listing-types").then((r) => r.data.data),
+  });
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Field label="Listing Title *" error={errors.title?.message}>
         <Input {...register("title")} placeholder="e.g. Spacious 3 Bed Apartment in Mirpur" style={inputStyle} />
       </Field>
+       <Field label="Listing Type *" error={errors.listing_type_id?.message}>
+        <select {...register("listing_type_id")} style={selectStyle}>
+          <option value="">Select a type</option>
+          {listingTypes.map((type) => (
+            <option key={type.id} value={type.id}>
+              {type.label}
+            </option>
+          ))}
+        </select>
+      </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Monthly Rent (৳) *" error={errors.price?.message}>
-          <Input type="number" placeholder="25000" {...register("price", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="25000" {...register("price")} style={inputStyle} />
         </Field>
         <Field label="Deposit (৳)">
-          <Input type="number" placeholder="50000" {...register("deposit", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="50000" {...register("deposit")} style={inputStyle} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Bedrooms *" error={errors.beds?.message}>
-          <Input type="number" placeholder="3" {...register("beds", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="3" {...register("beds")} style={inputStyle} />
         </Field>
         <Field label="Bathrooms *" error={errors.baths?.message}>
-          <Input type="number" placeholder="2" {...register("baths", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="2" {...register("baths")} style={inputStyle} />
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Size (sqft)">
-          <Input type="number" placeholder="1200" {...register("size", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="1200" {...register("size")} style={inputStyle} />
         </Field>
         <Field label="Floor No.">
-          <Input type="number" placeholder="4" {...register("floor_no", { valueAsNumber: true })} style={inputStyle} />
+          <Input type="number" placeholder="4" {...register("floor_no")} style={inputStyle} />
         </Field>
       </div>
       <Field label="Description">
@@ -267,13 +296,21 @@ function Step2Photos({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? []);
-    setFiles(selected);
-    setPreviews(selected.map((f) => URL.createObjectURL(f)));
+    const validFiles = selected.filter(file => {
+      if (file.size > 200 * 1024) {
+        toast.error(`${file.name} is too large. Max size is 200 KB.`);
+        return false;
+      }
+      return true;
+    });
+
+    setFiles(validFiles);
+    setPreviews(validFiles.map((f) => URL.createObjectURL(f)));
   };
 
   return (
     <div className="space-y-5">
-      <input type="file" multiple accept="image/*" id="photo-input" className="hidden" onChange={handleFileChange} />
+      <input type="file" multiple accept="image/jpeg,image/png" id="photo-input" className="hidden" onChange={handleFileChange} />
       {previews.length === 0 ? (
         <label
           htmlFor="photo-input"
@@ -292,7 +329,7 @@ function Step2Photos({
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
           <p style={{ fontSize: 14, fontWeight: 500, color: "#1C1C1E" }}>Upload photos</p>
-          <p style={{ fontSize: 12, color: "#8A8A8E", marginTop: 4 }}>JPG, PNG · up to 10 MB each</p>
+          <p style={{ fontSize: 12, color: "#8A8A8E", marginTop: 4 }}>JPG, PNG · up to 200 KB each</p>
         </label>
       ) : (
         <div>
@@ -360,19 +397,6 @@ function Step3Location({
     queryFn: () => api.get("/amenities").then((r) => r.data.data),
   });
 
-  const selectStyle: React.CSSProperties = {
-    width: "100%",
-    height: 44,
-    borderRadius: 10,
-    border: "1px solid #E5E7EB",
-    padding: "0 12px",
-    fontSize: 14,
-    color: "#1C1C1E",
-    background: "#fff",
-    outline: "none",
-    cursor: "pointer",
-  };
-
   const toggleAmenity = (id: number) => {
     const current = selectedAmenities ?? [];
     const next = current.includes(id)
@@ -398,6 +422,7 @@ function Step3Location({
         <Field label="Division">
           <select
             style={selectStyle}
+            {...register("division_id")}
             onChange={(e) => {
               setValue("division_id", Number(e.target.value));
               setValue("district_id", 0 as never);
@@ -411,6 +436,7 @@ function Step3Location({
         <Field label="District">
           <select
             style={selectStyle}
+            {...register("district_id")}
             disabled={!divisionId}
             onChange={(e) => {
               setValue("district_id", Number(e.target.value));
@@ -425,6 +451,7 @@ function Step3Location({
       <Field label="Upazila / Thana">
         <select
           style={selectStyle}
+          {...register("upazila_id")}
           disabled={!districtId}
           onChange={(e) => setValue("upazila_id", Number(e.target.value))}
         >
