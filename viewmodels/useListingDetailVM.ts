@@ -1,19 +1,18 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { listingService } from "@/services/ListingService";
-import { wishlistService } from "@/services/WishlistService";
 import { chatService } from "@/services/ChatService";
 import { QUERY_KEYS } from "@/lib/constants";
 import { useAuthStore } from "@/store/auth.store";
-import type { Listing } from "@/types/api";
+import { useWishlistVM } from "@/viewmodels/useWishlistVM";
 
 export function useListingDetailVM(listingId: string) {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const { user } = useAuthStore();
+  const wishlist = useWishlistVM();
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.listing(listingId),
@@ -21,32 +20,8 @@ export function useListingDetailVM(listingId: string) {
     enabled: !!listingId,
   });
 
-  const wishlistData = queryClient.getQueryData<Listing[]>(QUERY_KEYS.wishlist);
-  const isSaved = wishlistData?.some((l) => l.id === listingId) ?? false;
+  const isSaved = wishlist.isSaved(listingId);
   const isOwnListing = listing?.owner?.id === user?.id;
-
-  const toggleSaveMutation = useMutation({
-    mutationFn: () => wishlistService.toggleWishlist(listingId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.wishlist });
-      const prev = queryClient.getQueryData<Listing[]>(QUERY_KEYS.wishlist);
-      queryClient.setQueryData<Listing[]>(QUERY_KEYS.wishlist, (old = []) =>
-        isSaved
-          ? old.filter((l) => l.id !== listingId)
-          : listing
-          ? [...old, listing]
-          : old
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) queryClient.setQueryData(QUERY_KEYS.wishlist, ctx.prev);
-      toast.error("Failed to update wishlist");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wishlist });
-    },
-  });
 
   const startChatMutation = useMutation({
     mutationFn: (initialMessage: string) =>
@@ -69,8 +44,8 @@ export function useListingDetailVM(listingId: string) {
     isSaved,
     isOwnListing,
 
-    toggleSave: toggleSaveMutation.mutate,
-    toggleSavePending: toggleSaveMutation.isPending,
+    toggleSave: () => wishlist.toggle(listingId),
+    toggleSavePending: wishlist.isToggling(listingId),
 
     startChat: (msg?: string) =>
       startChatMutation.mutate(

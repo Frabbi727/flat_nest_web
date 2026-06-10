@@ -6,7 +6,9 @@ import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import { useWishlistVM } from "@/viewmodels/useWishlistVM";
 
 export default function WishlistPage() {
-  const { savedListings, isLoading, error, isSaved } = useWishlistVM();
+  const { savedListings, isLoading, error } = useWishlistVM({
+    withListings: true,
+  });
 
   return (
     <main style={{ maxWidth: 1140, margin: "0 auto", padding: "32px 40px 80px" }}>
@@ -73,11 +75,7 @@ export default function WishlistPage() {
           style={{ gap: 24 }}
         >
           {savedListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              saved={isSaved(listing.id)}
-            />
+            <ListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       )}

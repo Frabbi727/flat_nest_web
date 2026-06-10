@@ -4,32 +4,28 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
-import { wishlistService } from "@/services/WishlistService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/lib/constants";
+import { useWishlistVM } from "@/viewmodels/useWishlistVM";
 import { getThumbnail, formatPrice } from "@/lib/utils";
 import type { Listing } from "@/types/api";
 
 interface Props {
   listing: Listing;
-  saved?: boolean;
 }
 
-export default function ListingCard({ listing, saved = false }: Props) {
+// Spec §10: saved listings that left `active` status degrade visually
+const DEGRADED_LABELS: Partial<Record<Listing["status"], string>> = {
+  pending: "Under Review",
+  rented: "Rented Out",
+};
+
+export default function ListingCard({ listing }: Props) {
   const { isAuthenticated } = useAuthStore();
   const { openAuthModal } = useUIStore();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const { isSaved, isToggling, toggle } = useWishlistVM();
 
-  const toggleMutation = useMutation({
-    mutationFn: () => wishlistService.toggleWishlist(listing.id),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.wishlist });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.wishlist });
-    },
-  });
+  const saved = isSaved(listing.id);
+  const degradedLabel = DEGRADED_LABELS[listing.status];
 
   const handleCardClick = () => {
     if (!isAuthenticated) {
@@ -45,7 +41,7 @@ export default function ListingCard({ listing, saved = false }: Props) {
       openAuthModal("Sign in to save listings to your wishlist.");
       return;
     }
-    toggleMutation.mutate();
+    toggle(listing.id);
   };
 
   const specs = [
@@ -72,7 +68,11 @@ export default function ListingCard({ listing, saved = false }: Props) {
           alt={listing.title}
           fill
           className="object-cover transition-transform duration-300"
-          style={{ transform: "scale(1)" }}
+          style={{
+            transform: "scale(1)",
+            filter: degradedLabel ? "grayscale(0.8)" : undefined,
+            opacity: degradedLabel ? 0.7 : 1,
+          }}
           onMouseEnter={(e) =>
             ((e.currentTarget as HTMLImageElement).style.transform =
               "scale(1.04)")
@@ -87,6 +87,7 @@ export default function ListingCard({ listing, saved = false }: Props) {
         {/* Heart button — matches design: top:10, right:10, transparent bg */}
         <button
           onClick={handleSave}
+          disabled={isToggling(listing.id)}
           className="absolute"
           style={{
             top: 10,
@@ -118,6 +119,27 @@ export default function ListingCard({ listing, saved = false }: Props) {
             />
           </svg>
         </button>
+
+        {/* Degradation badge — saved listing no longer active (spec §10) */}
+        {degradedLabel && (
+          <div
+            className="absolute"
+            style={{
+              bottom: 12,
+              left: 12,
+              background: "rgba(28,28,30,0.85)",
+              color: "#fff",
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.2px",
+              textTransform: "uppercase",
+            }}
+          >
+            {degradedLabel}
+          </div>
+        )}
 
         {/* Type badge — top:12, left:12 */}
         {listing.type && (
