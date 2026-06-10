@@ -192,3 +192,9 @@ export interface StartChatPayload {
   listing_id: string;
   initial_message: string;
 }
+
+export interface RegisterFcmTokenPayload {
+  fcm_token: string;
+  device_type: "web" | "android" | "ios";
+  device_model: string;
+}

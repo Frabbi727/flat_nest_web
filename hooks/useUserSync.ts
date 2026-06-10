@@ -33,8 +33,8 @@ export function useUserSync() {
     // In a real implementation, you would:
     // a. Check for notification permission
     // b. Call getToken(messaging, { vapidKey: '...' })
-    // c. Call userService.registerFcmToken(token, navigator.userAgent)
-    console.log("FCM Sync placeholder: Ready to register token for", user.name);
+    // c. Call userService.registerFcmToken(token)
+    console.log("User Sync: Active for", user.name);
     
   }, [isAuthenticated, user?.id]);
 }
