@@ -29,7 +29,8 @@ export default function NearbyMap() {
   const { listings, userCoords, gpsPermissionDenied } = useNearbyMapVM();
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) {

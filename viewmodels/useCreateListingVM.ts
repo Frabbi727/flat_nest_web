@@ -12,10 +12,10 @@ import type {
 } from "@/types/api";
 
 // Helper to remove null/undefined values from objects to create "sparse payloads"
-function cleanPayload<T extends Record<string, any>>(payload: T): Partial<T> {
+function cleanPayload<T extends Record<string, unknown>>(payload: T): T {
   return Object.fromEntries(
     Object.entries(payload).filter(([_, v]) => v !== null && v !== undefined && v !== "")
-  ) as Partial<T>;
+  ) as unknown as T;
 }
 
 export function useCreateListingVM() {
@@ -26,7 +26,7 @@ export function useCreateListingVM() {
 
   const step1Mutation = useMutation({
     mutationFn: (data: CreateListingStep1Payload) =>
-      listingWriteService.createDraft(cleanPayload(data) as CreateListingStep1Payload),
+      listingWriteService.createDraft(cleanPayload(data as unknown as Record<string, unknown>) as unknown as CreateListingStep1Payload),
     onSuccess: (listing) => {
       setDraftListingId(listing.id);
       setCurrentStep(2);
@@ -47,7 +47,7 @@ export function useCreateListingVM() {
     mutationFn: async (data: LocationPayload & { amenities?: number[] }) => {
       if (!draftListingId) throw new Error("No listing ID");
       const { amenities, ...locationData } = data;
-      await listingWriteService.saveLocation(draftListingId, cleanPayload(locationData) as LocationPayload);
+      await listingWriteService.saveLocation(draftListingId, cleanPayload(locationData as unknown as Record<string, unknown>) as unknown as LocationPayload);
       if (amenities && amenities.length > 0) {
         await listingWriteService.updateListing(draftListingId, { amenities });
       }
@@ -59,7 +59,7 @@ export function useCreateListingVM() {
   const step4Mutation = useMutation({
     mutationFn: (data: OwnerInfoPayload) => {
       if (!draftListingId) throw new Error("No listing ID");
-      return listingWriteService.saveOwnerInfo(draftListingId, cleanPayload(data) as OwnerInfoPayload);
+      return listingWriteService.saveOwnerInfo(draftListingId, cleanPayload(data as unknown as Record<string, unknown>) as unknown as OwnerInfoPayload);
     },
     onSuccess: () => setCurrentStep(5),
     onError: () =>

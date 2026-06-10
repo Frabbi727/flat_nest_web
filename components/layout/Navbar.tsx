@@ -84,9 +84,9 @@ export default function Navbar() {
           {!isAuthenticated && (
             <>
               <Link href="/" style={linkStyle(pathname === "/")}>Browse</Link>
-              <a href="/#how-it-works" style={linkStyle(false)}>How it works</a>
-              <a href="/#for-owners" style={linkStyle(false)}>For owners</a>
-              <a href="#" style={linkStyle(false)}>Help</a>
+              <Link href="/#how-it-works" style={linkStyle(false)}>How it works</Link>
+              <Link href="/#for-owners" style={linkStyle(false)}>For owners</Link>
+              <Link href="#" style={linkStyle(false)}>Help</Link>
             </>
           )}
           {isAuthenticated && !isOwner && (

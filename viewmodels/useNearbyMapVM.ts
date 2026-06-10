@@ -22,7 +22,7 @@ export function useNearbyMapVM() {
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setGpsPermissionDenied(true);
+      setTimeout(() => setGpsPermissionDenied(true), 0);
       return;
     }
     navigator.geolocation.getCurrentPosition(

@@ -465,7 +465,7 @@ function Step3Location({
           }}
         />
         <p style={{ fontSize: 11, color: "#8A8A8E", marginTop: 6 }}>
-          Exact street address is only shown to renters you've replied to.
+          Exact street address is only shown to renters you&apos;ve replied to.
         </p>
       </div>
 

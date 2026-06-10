@@ -149,7 +149,7 @@ export default function LoginPage() {
             From the community
           </p>
           <blockquote className="text-2xl md:text-[28px] font-semibold leading-snug tracking-tight text-balance">
-            "Found my flat in Banani in three days — chatted with the owner directly, visited the same weekend, signed the lease that Monday."
+            &quot;Found my flat in Banani in three days — chatted with the owner directly, visited the same weekend, signed the lease that Monday.&quot;
           </blockquote>
           <div className="flex items-center gap-3 mt-8">
             <div
