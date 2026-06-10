@@ -26,40 +26,6 @@ const LocationMapPicker = dynamic(
   { ssr: false }
 );
 
-// ── Emoji map for amenities ───────────────────────────────────────
-const AMENITY_EMOJI: Record<string, string> = {
-  "Wi-Fi": "📶",
-  "WiFi": "📶",
-  "Wifi": "📶",
-  "Parking": "🅿️",
-  "Gas line": "🔥",
-  "Gas": "🔥",
-  "Lift": "🛗",
-  "Elevator": "🛗",
-  "Generator": "⚡",
-  "Gym": "🏋️",
-  "Roof access": "🏠",
-  "Rooftop": "🏠",
-  "Furnished": "🛋️",
-  "AC": "❄️",
-  "Air conditioning": "❄️",
-  "Security": "🔒",
-  "CCTV": "📷",
-  "Cable TV": "📺",
-  "TV": "📺",
-  "Hot water": "🚿",
-  "Water": "💧",
-  "Swimming pool": "🏊",
-  "Internet": "🌐",
-};
-
-function getEmoji(label: string) {
-  const key = Object.keys(AMENITY_EMOJI).find(
-    (k) => label.toLowerCase().includes(k.toLowerCase())
-  );
-  return key ? AMENITY_EMOJI[key] : "✨";
-}
-
 // ── Left stepper sidebar ──────────────────────────────────────────
 const STEPS = [
   { n: 1, label: "Basics" },
@@ -555,7 +521,6 @@ function Step3Location({
                       <Check style={{ width: 11, height: 11, color: "#fff" }} />
                     )}
                   </div>
-                  <span style={{ fontSize: 12 }}>{getEmoji(a.label)}</span>
                   <span style={{ fontSize: 13, color: checked ? "#1A6B72" : "#1C1C1E", fontWeight: checked ? 500 : 400 }}>
                     {a.label}
                   </span>
