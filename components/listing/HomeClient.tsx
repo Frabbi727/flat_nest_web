@@ -7,14 +7,21 @@ import ListingCard from "@/components/listing/ListingCard";
 import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import FilterSheet from "@/components/listing/FilterSheet";
 import { useListingsVM } from "@/viewmodels/useListingsVM";
-import type { ListingType, Amenity } from "@/types/api";
+import type { ListingType, Amenity, GeoItem, ListingFacing } from "@/types/api";
 
 interface Props {
   listingTypes: ListingType[];
   amenities: Amenity[];
+  facings?: ListingFacing[];
+  divisions?: GeoItem[];
 }
 
-export default function HomeClient({ listingTypes, amenities }: Props) {
+export default function HomeClient({
+  listingTypes,
+  amenities,
+  facings,
+  divisions,
+}: Props) {
   const {
     listings,
     isLoading,
@@ -26,6 +33,11 @@ export default function HomeClient({ listingTypes, amenities }: Props) {
     setTypeFilter,
     applyFilters,
   } = useListingsVM(listingTypes, amenities);
+
+  // Sheet-managed filters only — search & type chips live outside the sheet
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v !== undefined && v !== ""
+  ).length;
 
   return (
     <div>
@@ -52,7 +64,13 @@ export default function HomeClient({ listingTypes, amenities }: Props) {
         <div className="flex-1" />
 
         {/* Filter button */}
-        <FilterSheet filters={filters} amenities={amenities} onApply={applyFilters}>
+        <FilterSheet
+          filters={filters}
+          amenities={amenities}
+          facings={facings}
+          divisions={divisions}
+          onApply={applyFilters}
+        >
           <button
             className="flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             style={{
@@ -80,6 +98,25 @@ export default function HomeClient({ listingTypes, amenities }: Props) {
               <path d="M3 6h18M6 12h12M10 18h4" />
             </svg>
             Filters
+            {activeFilterCount > 0 && (
+              <span
+                style={{
+                  minWidth: 18,
+                  height: 18,
+                  padding: "0 5px",
+                  borderRadius: 999,
+                  background: "#1C1C1E",
+                  color: "#FFFFFF",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </FilterSheet>
       </div>

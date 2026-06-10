@@ -1,6 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { fetchListingTypes, fetchAmenities } from "@/services/MetaService";
+import {
+  fetchListingTypes,
+  fetchAmenities,
+  fetchListingFacings,
+} from "@/services/MetaService";
+import { fetchDivisions } from "@/services/GeoService";
 import HomeClient from "@/components/listing/HomeClient";
 import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import Navbar from "@/components/layout/Navbar";
@@ -65,9 +70,11 @@ export default async function HomePage() {
   // Fail-soft: the API may be unreachable from the build/deploy environment.
   // Caught here (not inside the cached fetchers) so failures are never cached
   // for days — the next request retries and repopulates.
-  const [listingTypes, amenities] = await Promise.all([
+  const [listingTypes, amenities, facings, divisions] = await Promise.all([
     fetchListingTypes().catch(() => []),
     fetchAmenities().catch(() => []),
+    fetchListingFacings().catch(() => []),
+    fetchDivisions().catch(() => []),
   ]);
 
   return (
@@ -345,7 +352,12 @@ export default async function HomePage() {
         </div>
 
         <Suspense fallback={<ListingCardSkeleton count={8} />}>
-          <HomeClient listingTypes={listingTypes} amenities={amenities} />
+          <HomeClient
+            listingTypes={listingTypes}
+            amenities={amenities}
+            facings={facings}
+            divisions={divisions}
+          />
         </Suspense>
       </section>
 
