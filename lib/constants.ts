@@ -22,6 +22,8 @@ export const QUERY_KEYS = {
   unions: (upazilaId: number) => ["geo-unions", upazilaId],
   wishlist: ["wishlist"],
   ownerListings: (filters: object) => ["owner-listings", filters],
+  ownerAccessRequests: (filters: object) => ["owner-access-requests", filters],
+  ownerAccessRequestsPendingCount: ["owner-access-requests", "pending-count"],
   chats: ["chats"],
   chatMessages: (chatId: string) => ["chat-messages", chatId],
   notifications: (page: number) => ["notifications", page],

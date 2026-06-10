@@ -1,12 +1,150 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MessageCircle, Heart, Bed, Bath, Maximize2, Calendar } from "lucide-react";
+import {
+  Phone,
+  MessageCircle,
+  Heart,
+  Bed,
+  Bath,
+  Maximize2,
+  Calendar,
+  Lock,
+  MapPin,
+  Mail,
+  ExternalLink,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useListingDetailVM } from "@/viewmodels/useListingDetailVM";
 import { resolveImageUrl, formatPrice, formatDate, cn } from "@/lib/utils";
+import type { Listing, AccessRequestStatus } from "@/types/api";
+
+const PREFERRED_CONTACT_LABEL: Record<string, string> = {
+  call: "Prefers phone calls",
+  whatsapp: "Prefers WhatsApp",
+  both: "Call or WhatsApp",
+};
+
+function ExactLocationCard({ listing }: { listing: Listing }) {
+  const parts = [
+    listing.house_name ? `House: ${listing.house_name}` : null,
+    listing.road ? `Road: ${listing.road}` : null,
+    listing.block ? `Block: ${listing.block}` : null,
+    listing.section ? `Section: ${listing.section}` : null,
+  ].filter(Boolean);
+
+  const hasCoords = listing.coord_x != null && listing.coord_y != null;
+  if (parts.length === 0 && !hasCoords) return null;
+
+  return (
+    <div className="rounded-xl border p-3 space-y-1.5">
+      <p className="font-semibold text-sm flex items-center gap-1.5">
+        <MapPin className="w-4 h-4 text-primary" />
+        Exact Location
+      </p>
+      {parts.length > 0 && (
+        <p className="text-sm text-muted-foreground">{parts.join(" · ")}</p>
+      )}
+      {hasCoords && (
+        <a
+          href={`https://www.google.com/maps?q=${listing.coord_y},${listing.coord_x}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary inline-flex items-center gap-1"
+        >
+          View on map
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+function ContactAccessSection({
+  listing,
+  status,
+  requestAccess,
+  requestAccessPending,
+}: {
+  listing: Listing;
+  status: AccessRequestStatus | null;
+  requestAccess: () => void;
+  requestAccessPending: boolean;
+}) {
+  // Access granted — show the full contact card + exact location
+  if (status === "accepted") {
+    const ownerName = listing.owner_name ?? listing.owner?.name;
+    const preferred = listing.preferred_contact
+      ? PREFERRED_CONTACT_LABEL[listing.preferred_contact]
+      : null;
+    return (
+      <>
+        <div className="rounded-xl border p-3 space-y-1">
+          <p className="font-semibold text-sm mb-1">Contact Owner</p>
+          {ownerName && <p className="text-sm">{ownerName}</p>}
+          {listing.owner_phone && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" />
+              {listing.owner_phone}
+            </p>
+          )}
+          {listing.owner_alt_phone && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5" />
+              {listing.owner_alt_phone} (alt)
+            </p>
+          )}
+          {listing.owner_email && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5" />
+              {listing.owner_email}
+            </p>
+          )}
+          {preferred && (
+            <Badge variant="secondary" className="mt-1">
+              {preferred}
+            </Badge>
+          )}
+        </div>
+        <ExactLocationCard listing={listing} />
+      </>
+    );
+  }
+
+  // Locked — show the appropriate request state per access_request_status
+  return (
+    <div className="rounded-xl border p-4 text-center space-y-2">
+      <Lock className="w-5 h-5 mx-auto text-muted-foreground" />
+      <p className="font-semibold text-sm">Contact & Exact Location</p>
+      <p className="text-sm text-muted-foreground">
+        {status === "pending"
+          ? "Your request is waiting for the owner's approval."
+          : status === "rejected"
+            ? "The owner declined your request. You can send it again."
+            : "Hidden until the owner approves your request."}
+      </p>
+      {status === "pending" ? (
+        <Button className="w-full" disabled>
+          Request Pending…
+        </Button>
+      ) : (
+        <Button
+          className="w-full"
+          onClick={requestAccess}
+          disabled={requestAccessPending}
+        >
+          {requestAccessPending
+            ? "Sending…"
+            : status === "rejected"
+              ? "Send Again"
+              : "Request Contact Info"}
+        </Button>
+      )}
+    </div>
+  );
+}
 
 export default function ListingDetailView({ listingId }: { listingId: string }) {
   const {
@@ -15,6 +153,10 @@ export default function ListingDetailView({ listingId }: { listingId: string }) 
     error,
     isSaved,
     isOwnListing,
+    accessRequestStatus,
+    hasContactAccess,
+    requestAccess,
+    requestAccessPending,
     toggleSave,
     toggleSavePending,
     startChat,
@@ -146,20 +288,19 @@ export default function ListingDetailView({ listingId }: { listingId: string }) 
           </div>
         )}
 
-        {listing.owner && !isOwnListing && (
-          <div className="rounded-xl border p-3">
-            <p className="font-semibold text-sm mb-1">Contact Owner</p>
-            <p className="text-sm">{listing.owner_name ?? listing.owner.name}</p>
-            {listing.owner_phone && (
-              <p className="text-sm text-muted-foreground">{listing.owner_phone}</p>
-            )}
-          </div>
+        {!isOwnListing && (
+          <ContactAccessSection
+            listing={listing}
+            status={accessRequestStatus}
+            requestAccess={requestAccess}
+            requestAccessPending={requestAccessPending}
+          />
         )}
       </div>
 
       {!isOwnListing && (
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t px-4 py-3 flex gap-3 max-w-2xl mx-auto">
-          {listing.owner_phone && (
+          {hasContactAccess && listing.owner_phone ? (
             <a
               href={`tel:${listing.owner_phone}`}
               className={cn(
@@ -170,6 +311,21 @@ export default function ListingDetailView({ listingId }: { listingId: string }) 
               <Phone className="w-4 h-4 mr-1" />
               Call
             </a>
+          ) : accessRequestStatus === "pending" ? (
+            <Button variant="outline" className="flex-1" disabled>
+              <Lock className="w-4 h-4 mr-1" />
+              Pending…
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={requestAccess}
+              disabled={requestAccessPending}
+            >
+              <Lock className="w-4 h-4 mr-1" />
+              {accessRequestStatus === "rejected" ? "Re-request" : "Request Info"}
+            </Button>
           )}
           <Button
             className="flex-1"

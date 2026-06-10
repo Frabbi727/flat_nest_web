@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   List,
   MessageCircle,
+  KeyRound,
   BarChart2,
   CreditCard,
   Star,
@@ -33,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { useOwnerDashboardVM } from "@/viewmodels/useOwnerDashboardVM";
 import { useChatListVM } from "@/viewmodels/useChatListVM";
+import { usePendingAccessRequestCount } from "@/viewmodels/useAccessRequestsVM";
 import { useAuthStore } from "@/store/auth.store";
 import { formatPrice, getThumbnail, resolveImageUrl } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -43,14 +45,27 @@ const NAV = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/listings/create", icon: List, label: "My listings", matchPrefix: "/listings" },
   { href: "/messages", icon: MessageCircle, label: "Inquiries" },
+  { href: "/access-requests", icon: KeyRound, label: "Access requests" },
   { href: "#", icon: BarChart2, label: "Analytics" },
   { href: "#", icon: CreditCard, label: "Payouts" },
   { href: "#", icon: Star, label: "Reviews" },
   { href: "#", icon: Settings, label: "Settings" },
 ];
 
-function Sidebar({ unreadCount }: { unreadCount: number }) {
+function Sidebar({
+  unreadCount,
+  accessRequestCount,
+}: {
+  unreadCount: number;
+  accessRequestCount: number;
+}) {
   const pathname = usePathname();
+  const badgeFor = (label: string) =>
+    label === "Inquiries"
+      ? unreadCount
+      : label === "Access requests"
+        ? accessRequestCount
+        : 0;
   return (
     <aside
       style={{
@@ -91,7 +106,7 @@ function Sidebar({ unreadCount }: { unreadCount: number }) {
             >
               <Icon style={{ width: 16, height: 16 }} />
               {label}
-              {label === "Inquiries" && unreadCount > 0 && (
+              {badgeFor(label) > 0 && (
                 <span
                   style={{
                     position: "absolute",
@@ -106,7 +121,7 @@ function Sidebar({ unreadCount }: { unreadCount: number }) {
                     textAlign: "center",
                   }}
                 >
-                  {unreadCount}
+                  {badgeFor(label)}
                 </span>
               )}
             </Link>
@@ -304,6 +319,7 @@ export default function OwnerDashboard() {
     deletePending,
   } = useOwnerDashboardVM();
   const { chats } = useChatListVM();
+  const pendingAccessRequests = usePendingAccessRequestCount();
 
   const unreadCount = chats.reduce((sum, c) => sum + c.unread_count, 0);
   const totalViews = listings.reduce((s, l) => s + (l.views ?? 0), 0);
@@ -347,7 +363,10 @@ export default function OwnerDashboard() {
 
   return (
     <div className="flex" style={{ minHeight: "calc(100vh - 57px)" }}>
-      <Sidebar unreadCount={unreadCount} />
+      <Sidebar
+        unreadCount={unreadCount}
+        accessRequestCount={pendingAccessRequests}
+      />
 
       {/* Main */}
       <main style={{ flex: 1, padding: "32px 36px", background: "#F7F8FA", minWidth: 0 }}>

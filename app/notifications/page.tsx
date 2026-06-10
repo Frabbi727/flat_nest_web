@@ -24,6 +24,15 @@ function NotificationsContent() {
   const handleTap = (kind: string, referenceId: string | null) => {
     if (kind === "new_message" && referenceId) {
       router.push(`/messages/${referenceId}`);
+    } else if (kind === "contact_info_requested") {
+      // reference_id is the access request id — the owner reviews it on the requests list
+      router.push("/access-requests");
+    } else if (
+      (kind === "contact_info_granted" || kind === "contact_info_denied") &&
+      referenceId
+    ) {
+      // reference_id is the listing id — take the renter back to the listing
+      router.push(`/listings/${referenceId}`);
     } else {
       router.push("/dashboard");
     }

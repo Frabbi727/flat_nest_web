@@ -46,6 +46,16 @@ export interface GeoItem {
   bn_name: string;
 }
 
+export type AccessRequestStatus = "pending" | "accepted" | "rejected";
+
+export interface AccessRequest {
+  id: string;
+  status: AccessRequestStatus;
+  listing: { id: string; title: string };
+  requester: { id: string; name: string; avatar_url: string | null };
+  created_at: string;
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -64,8 +74,14 @@ export interface Listing {
   status: "draft" | "pending" | "active" | "rejected" | "rented";
   status_label: string;
   views: number;
-  coord_x: number | null;
-  coord_y: number | null;
+  // Sensitive — omitted by the API unless the viewer owns the listing
+  // or their access request was accepted (access_request_status === "accepted")
+  coord_x?: number | null;
+  coord_y?: number | null;
+  road?: string | null;
+  house_name?: string | null;
+  block?: string | null;
+  section?: string | null;
   distance_km: number | null;
   listing_type_id: number | null;
   type: string;
@@ -75,12 +91,15 @@ export interface Listing {
   union_id: number | null;
   amenities: Amenity[];
   photos: ListingPhoto[];
-  owner: ListingOwner | null;
-  owner_name: string | null;
-  owner_phone: string | null;
-  owner_alt_phone: string | null;
-  owner_email: string | null;
-  preferred_contact: "call" | "whatsapp" | "both" | null;
+  // Sensitive — same omission rules as the location fields above
+  owner?: ListingOwner | null;
+  owner_name?: string | null;
+  owner_phone?: string | null;
+  owner_alt_phone?: string | null;
+  owner_email?: string | null;
+  preferred_contact?: "call" | "whatsapp" | "both" | null;
+  // null = never requested (or guest); otherwise the viewer's request state
+  access_request_status?: AccessRequestStatus | null;
   created_at: string;
 }
 
