@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { listingService } from "@/services/ListingService";
 import { userService } from "@/services/UserService";
-import { QUERY_KEYS } from "@/lib/constants";
 
 export function useNearbyMapVM() {
   const [userCoords, setUserCoords] = useState<{
@@ -49,6 +48,8 @@ export function useNearbyMapVM() {
     queryKey: ["listings-nearby", nearbyParams],
     queryFn: () => listingService.getNearbyListings(nearbyParams!),
     enabled: !!nearbyParams,
+    // Keep current markers on screen while a new radius loads
+    placeholderData: keepPreviousData,
   });
 
   return {

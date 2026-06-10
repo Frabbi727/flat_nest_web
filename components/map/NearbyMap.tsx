@@ -79,13 +79,22 @@ function buildPopup(listing: Listing): HTMLElement {
   return root;
 }
 
+const RADIUS_OPTIONS_KM = [2, 5, 10, 20];
+
 export default function NearbyMap() {
-  const { listings, isLoading, userCoords, gpsPermissionDenied } =
-    useNearbyMapVM();
+  const {
+    listings,
+    isLoading,
+    userCoords,
+    gpsPermissionDenied,
+    radius,
+    setRadius,
+  } = useNearbyMapVM();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
+  const radiusCircleRef = useRef<L.Circle | null>(null);
 
   // Create the map once coords are known; destroy it fully on unmount so a
   // remount always starts from a clean container
@@ -117,8 +126,34 @@ export default function NearbyMap() {
       map.remove();
       mapRef.current = null;
       markersRef.current = null;
+      radiusCircleRef.current = null;
     };
   }, [userCoords]);
+
+  // Greenish coverage circle — visualizes the search radius and grows/shrinks
+  // with the selected km; the viewport re-fits so the whole area stays visible
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !userCoords) return;
+    const center: [number, number] = [userCoords.lat, userCoords.lng];
+    const meters = radius * 1000;
+    if (!radiusCircleRef.current) {
+      radiusCircleRef.current = L.circle(center, {
+        radius: meters,
+        color: "#1A6B72",
+        weight: 1.5,
+        fillColor: "#1A6B72",
+        fillOpacity: 0.08,
+        interactive: false,
+      }).addTo(map);
+    } else {
+      radiusCircleRef.current.setLatLng(center);
+      radiusCircleRef.current.setRadius(meters);
+    }
+    map.fitBounds(radiusCircleRef.current.getBounds(), {
+      padding: [24, 24],
+    });
+  }, [radius, userCoords]);
 
   // Sync listing markers whenever data changes
   useEffect(() => {
@@ -156,6 +191,23 @@ export default function NearbyMap() {
   return (
     <div className="relative h-[calc(100vh-3.5rem)] w-full">
       <div ref={containerRef} className="h-full w-full" />
+
+      {/* Radius filter — drives the nearby query and the coverage circle */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-1 bg-background border rounded-full p-1 shadow-lg">
+        {RADIUS_OPTIONS_KM.map((km) => (
+          <button
+            key={km}
+            onClick={() => setRadius(km)}
+            className={
+              radius === km
+                ? "h-8 px-3.5 rounded-full text-sm font-semibold bg-primary text-primary-foreground"
+                : "h-8 px-3.5 rounded-full text-sm text-muted-foreground hover:bg-muted"
+            }
+          >
+            {km} km
+          </button>
+        ))}
+      </div>
 
       {!isLoading && listings.length === 0 && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-background border rounded-full px-4 py-1.5 text-sm text-muted-foreground shadow">
