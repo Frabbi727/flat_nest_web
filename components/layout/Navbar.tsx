@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/auth.store";
 import { useAuthVM } from "@/viewmodels/useAuthVM";
+import { useNotificationsVM } from "@/viewmodels/useNotificationsVM";
 import { resolveImageUrl } from "@/lib/utils";
 
 // Logo SVG matches the design's FNWLogo exactly
@@ -47,6 +48,7 @@ export default function Navbar() {
   const { isAuthenticated, user } = useAuthStore();
   const isOwner = user?.role === "owner";
   const { logout } = useAuthVM();
+  const { unreadCount } = useNotificationsVM();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -180,6 +182,19 @@ export default function Navbar() {
                   + New listing
                 </Link>
               )}
+              <Link
+                href="/notifications"
+                className="relative p-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute top-1.5 right-1.5 w-4 h-4 bg-primary text-[10px] font-bold text-white rounded-full flex items-center justify-center border-2 border-white"
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="outline-none">
                   <div
