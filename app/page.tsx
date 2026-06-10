@@ -62,9 +62,12 @@ const HOW_IT_WORKS = [
 ] as const;
 
 export default async function HomePage() {
+  // Fail-soft: the API may be unreachable from the build/deploy environment.
+  // Caught here (not inside the cached fetchers) so failures are never cached
+  // for days — the next request retries and repopulates.
   const [listingTypes, amenities] = await Promise.all([
-    fetchListingTypes(),
-    fetchAmenities(),
+    fetchListingTypes().catch(() => []),
+    fetchAmenities().catch(() => []),
   ]);
 
   return (
