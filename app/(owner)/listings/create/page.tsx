@@ -65,7 +65,7 @@ const STEPS = [
   { n: 1, label: "Basics" },
   { n: 2, label: "Photos & description" },
   { n: 3, label: "Location & amenities" },
-  { n: 4, label: "Pricing & rules" },
+  { n: 4, label: "Contact info" },
   { n: 5, label: "Review & publish" },
 ];
 
@@ -561,14 +561,14 @@ function Step4OwnerInfo({
 }) {
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<OwnerInfoForm>({
     resolver: zodResolver(ownerInfoSchema),
-    defaultValues: { preferred_contact: "phone" },
+    defaultValues: { preferred_contact: "call" },
   });
   const preferred = watch("preferred_contact");
 
   const contactOptions: { value: OwnerInfoForm["preferred_contact"]; label: string; emoji: string }[] = [
-    { value: "phone", label: "Phone call", emoji: "📞" },
-    { value: "email", label: "Email", emoji: "✉️" },
-    { value: "chat", label: "In-app chat", emoji: "💬" },
+    { value: "call", label: "Phone call", emoji: "📞" },
+    { value: "whatsapp", label: "WhatsApp", emoji: "💬" },
+    { value: "both", label: "Call & WhatsApp", emoji: "📱" },
   ];
 
   return (

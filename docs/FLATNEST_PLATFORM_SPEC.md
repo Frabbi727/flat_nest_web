@@ -529,11 +529,11 @@ Repeat the field name **`photos[]`** for each file. jpg/jpeg/png, **≤ 200 KB e
   "owner_phone": "01711000001",
   "owner_alt_phone": "01811000002",
   "owner_email": "rahim@example.com",
-  "preferred_contact": "phone"
+  "preferred_contact": "call"
 }
 ```
 
-`preferred_contact`: `phone` | `email` | `chat`. **Response `data`:** updated listing.
+`preferred_contact`: `call` | `whatsapp` | `both`. **Response `data`:** updated listing.
 
 (There is also a generic `PATCH /listings/{id}` that accepts *any* subset of Step-1 fields + address + owner-info fields — used for edits, see §14.)
 
@@ -611,7 +611,7 @@ Send **only changed fields**; any subset of:
   "road": "Road 3", "house_name": "Blue Tower", "block": "B", "section": "12",
   "owner_name": "Rahim", "owner_phone": "01711000001",
   "owner_alt_phone": "01811000002", "owner_email": "rahim@example.com",
-  "preferred_contact": "phone"
+  "preferred_contact": "call"
 }
 ```
 

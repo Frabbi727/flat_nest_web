@@ -751,7 +751,7 @@ Authorization: Bearer <token>
 | `owner_phone` | Primary phone |
 | `owner_alt_phone` | Alternate phone |
 | `owner_email` | Contact email |
-| `preferred_contact` | `phone` \| `email` \| `chat` |
+| `preferred_contact` | `call` \| `whatsapp` \| `both` |
 
 **Response `data`:** Updated listing object.
 

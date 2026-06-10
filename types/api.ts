@@ -80,7 +80,7 @@ export interface Listing {
   owner_phone: string | null;
   owner_alt_phone: string | null;
   owner_email: string | null;
-  preferred_contact: "phone" | "email" | "chat" | null;
+  preferred_contact: "call" | "whatsapp" | "both" | null;
   created_at: string;
 }
 
@@ -185,7 +185,7 @@ export interface OwnerInfoPayload {
   owner_phone: string;
   owner_alt_phone?: string;
   owner_email?: string;
-  preferred_contact: "phone" | "email" | "chat";
+  preferred_contact: "call" | "whatsapp" | "both";
 }
 
 export interface StartChatPayload {

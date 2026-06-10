@@ -78,7 +78,7 @@ export const ownerInfoSchema = z.object({
     .min(11, "Phone must be at least 11 digits"),
   owner_alt_phone: z.string().optional(),
   owner_email: z.string().email().optional().or(z.literal("")),
-  preferred_contact: z.enum(["phone", "email", "chat"]),
+  preferred_contact: z.enum(["call", "whatsapp", "both"]),
 });
 
 export type LoginForm = z.infer<typeof loginSchema>;

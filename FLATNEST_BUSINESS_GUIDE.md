@@ -264,11 +264,11 @@ Body: {
   "owner_phone": "01711000001",
   "owner_alt_phone": "01811000002",
   "owner_email": "rahim@example.com",
-  "preferred_contact": "phone"
+  "preferred_contact": "call"
 }
 ```
 
-`preferred_contact` options: `"phone"` | `"email"` | `"chat"`
+`preferred_contact` options: `"call"` | `"whatsapp"` | `"both"`
 
 ---
 
