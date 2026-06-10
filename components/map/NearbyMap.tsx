@@ -8,6 +8,7 @@ import { useNearbyMapVM } from "@/viewmodels/useNearbyMapVM";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 
+
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
   ._getIconUrl;
 L.Icon.Default.mergeOptions({
