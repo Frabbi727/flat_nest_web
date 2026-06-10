@@ -28,4 +28,9 @@ export const QUERY_KEYS = {
   chatMessages: (chatId: string) => ["chat-messages", chatId],
   notifications: (page: number) => ["notifications", page],
   notificationsUnread: ["notifications-unread"],
+  activeBanner: ["active-banner"],
 } as const;
+
+// localStorage key holding the id of the banner campaign the user closed.
+// A new campaign (different id) bypasses it — see docs/banner/BANNER_INTEGRATION_GUIDE.md
+export const BANNER_DISMISSED_KEY = "last_dismissed_banner_id";

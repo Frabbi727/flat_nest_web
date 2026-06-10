@@ -212,6 +212,23 @@ export interface StartChatPayload {
   initial_message: string;
 }
 
+export interface BannerImage {
+  id: number;
+  banner_id: number;
+  image_url: string;
+  target_url: string | null;
+  order: number;
+  is_active: boolean;
+}
+
+export interface Banner {
+  id: number;
+  title: string;
+  description: string | null;
+  is_active: boolean;
+  images: BannerImage[];
+}
+
 export interface RegisterFcmTokenPayload {
   fcm_token: string;
   device_type: "web" | "android" | "ios";

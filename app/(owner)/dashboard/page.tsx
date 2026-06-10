@@ -35,6 +35,7 @@ import {
 import { useOwnerDashboardVM } from "@/viewmodels/useOwnerDashboardVM";
 import { useChatListVM } from "@/viewmodels/useChatListVM";
 import { usePendingAccessRequestCount } from "@/viewmodels/useAccessRequestsVM";
+import PromoBannerDialog from "@/components/banner/PromoBannerDialog";
 import { useAuthStore } from "@/store/auth.store";
 import { formatPrice, getThumbnail, resolveImageUrl } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -363,6 +364,7 @@ export default function OwnerDashboard() {
 
   return (
     <div className="flex" style={{ minHeight: "calc(100vh - 57px)" }}>
+      <PromoBannerDialog />
       <Sidebar
         unreadCount={unreadCount}
         accessRequestCount={pendingAccessRequests}
