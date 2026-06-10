@@ -37,9 +37,13 @@ export function useCreateListingVM() {
   });
 
   const step3Mutation = useMutation({
-    mutationFn: (data: LocationPayload) => {
+    mutationFn: async (data: LocationPayload & { amenities?: number[] }) => {
       if (!draftListingId) throw new Error("No listing ID");
-      return listingWriteService.saveLocation(draftListingId, data);
+      const { amenities, ...locationData } = data;
+      await listingWriteService.saveLocation(draftListingId, locationData);
+      if (amenities && amenities.length > 0) {
+        await listingWriteService.updateListing(draftListingId, { amenities });
+      }
     },
     onSuccess: () => setCurrentStep(4),
     onError: () => toast.error("Failed to save location. Please try again."),

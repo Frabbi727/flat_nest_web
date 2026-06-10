@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Check, Clock, Send, X, XCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,9 +11,20 @@ import { resolveImageUrl, cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function ChatDetailView({ chatId }: { chatId: string }) {
-  const { messages, isLoading, chat, sendMessage, sendPending } =
-    useChatDetailVM(chatId);
+  const {
+    messages,
+    chatStatus,
+    isLoading,
+    chat,
+    sendMessage,
+    sendPending,
+    acceptChat,
+    acceptPending,
+    rejectChat,
+    rejectPending,
+  } = useChatDetailVM(chatId);
   const { user } = useAuthStore();
+  const isOwner = user?.role === "owner";
   const [text, setText] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -104,23 +115,66 @@ export default function ChatDetailView({ chatId }: { chatId: string }) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t px-4 py-3 flex gap-2 bg-background">
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKey}
-          placeholder="Type a message…"
-          rows={1}
-          className="flex-1 resize-none rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 bg-background"
-        />
-        <Button
-          onClick={handleSend}
-          disabled={!text.trim() || sendPending}
-          size="icon"
-        >
-          <Send className="w-4 h-4" />
-        </Button>
-      </div>
+      {/* Footer — never render the input unless the chat is accepted (§15) */}
+      {!isLoading &&
+        (chatStatus === "accepted" ? (
+          <div className="border-t px-4 py-3 flex gap-2 bg-background">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder="Type a message…"
+              rows={1}
+              className="flex-1 resize-none rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50 bg-background"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!text.trim() || sendPending}
+              size="icon"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : chatStatus === "rejected" ? (
+          <div className="border-t px-4 py-4 bg-background">
+            <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <XCircle className="w-4 h-4" />
+              This chat request was declined.
+            </p>
+          </div>
+        ) : isOwner ? (
+          <div className="border-t px-4 py-4 bg-background space-y-3">
+            <p className="text-sm text-muted-foreground text-center">
+              This renter wants to chat about your listing.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                onClick={() => acceptChat()}
+                disabled={acceptPending || rejectPending}
+              >
+                <Check className="w-4 h-4 mr-1" />
+                Accept Request
+              </Button>
+              <Button
+                className="flex-1"
+                variant="outline"
+                onClick={() => rejectChat()}
+                disabled={acceptPending || rejectPending}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Reject Request
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="border-t px-4 py-4 bg-background">
+            <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              Waiting for the owner to accept your chat request.
+            </p>
+          </div>
+        ))}
     </div>
   );
 }

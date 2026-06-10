@@ -33,6 +33,6 @@ export interface NearbyFilters {
 
 export interface OwnerListingFilters {
   page?: number;
-  status?: "draft" | "submitted" | "approved" | "rejected" | "rented";
+  status?: "draft" | "pending" | "active" | "rejected" | "rented";
   type_id?: number;
 }

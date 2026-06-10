@@ -61,7 +61,7 @@ export interface Listing {
   facing: ListingFacing | null;
   available_from: string | null;
   description: string | null;
-  status: "draft" | "submitted" | "approved" | "rejected" | "rented";
+  status: "draft" | "pending" | "active" | "rejected" | "rented";
   status_label: string;
   views: number;
   coord_x: number | null;
@@ -99,13 +99,21 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export type ChatStatus = "pending" | "accepted" | "rejected";
+
 export interface Chat {
   id: string;
   listing: { id: string; title: string; area: string | null };
   other_user: { id: string; name: string; avatar_url: string | null };
   last_message: ChatMessage | null;
   unread_count: number;
+  status: ChatStatus;
   updated_at: string;
+}
+
+export interface ChatMessagesResponse {
+  chat: { status: ChatStatus };
+  messages: ChatMessage[];
 }
 
 export interface Notification {

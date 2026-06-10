@@ -17,7 +17,8 @@ export default function AuthModal() {
 
   const handleLogin = () => {
     closeAuthModal();
-    router.push("/login");
+    const here = window.location.pathname + window.location.search;
+    router.push(`/login?next=${encodeURIComponent(here)}`);
   };
 
   const handleRegister = () => {

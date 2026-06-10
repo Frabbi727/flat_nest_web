@@ -45,7 +45,7 @@ export class ListingWriteService implements IListingWriteService {
 
   async updateListing(
     listingId: string,
-    data: Partial<CreateListingStep1Payload & OwnerInfoPayload>
+    data: Partial<CreateListingStep1Payload & OwnerInfoPayload & { amenities: number[] }>
   ): Promise<Listing> {
     const { data: res } = await api.patch(`/listings/${listingId}`, data);
     return res.data;

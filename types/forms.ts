@@ -42,6 +42,7 @@ export const locationSchema = z.object({
   section: z.string().optional(),
   coord_y: z.number(),
   coord_x: z.number(),
+  amenities: z.array(z.number()).optional(),
 });
 
 export const ownerInfoSchema = z.object({

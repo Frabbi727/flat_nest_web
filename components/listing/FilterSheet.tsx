@@ -21,9 +21,10 @@ interface Props {
   filters: ListingFilters;
   amenities: Amenity[];
   onApply: (filters: ListingFilters) => void;
+  children?: React.ReactNode;
 }
 
-export default function FilterSheet({ filters, amenities, onApply }: Props) {
+export default function FilterSheet({ filters, amenities, onApply, children }: Props) {
   const { isAuthenticated } = useAuthStore();
   const { openAuthModal } = useUIStore();
   const [open, setOpen] = useState(false);
@@ -62,10 +63,14 @@ export default function FilterSheet({ filters, amenities, onApply }: Props) {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={handleOpen}>
-        <SlidersHorizontal className="w-4 h-4 mr-1" />
-        Filter
-      </Button>
+      {children ? (
+        <div onClick={handleOpen} className="contents">{children}</div>
+      ) : (
+        <Button variant="outline" size="sm" onClick={handleOpen}>
+          <SlidersHorizontal className="w-4 h-4 mr-1" />
+          Filter
+        </Button>
+      )}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">

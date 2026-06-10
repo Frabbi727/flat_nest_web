@@ -13,7 +13,12 @@ export default function AuthGate({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) router.push("/login");
+    if (!isAuthenticated) {
+      // window.location instead of usePathname() — reading the pathname during
+      // render breaks partial prerendering of dynamic routes
+      const here = window.location.pathname + window.location.search;
+      router.push(`/login?next=${encodeURIComponent(here)}`);
+    }
   }, [isAuthenticated, router]);
 
   if (!isAuthenticated) return null;

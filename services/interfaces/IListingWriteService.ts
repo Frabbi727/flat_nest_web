@@ -12,7 +12,7 @@ export interface IListingWriteService {
   saveOwnerInfo(listingId: string, data: OwnerInfoPayload): Promise<Listing>;
   updateListing(
     listingId: string,
-    data: Partial<CreateListingStep1Payload & OwnerInfoPayload>
+    data: Partial<CreateListingStep1Payload & OwnerInfoPayload & { amenities: number[] }>
   ): Promise<Listing>;
   submitForReview(listingId: string): Promise<void>;
   markRented(listingId: string): Promise<void>;

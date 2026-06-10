@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -25,8 +25,20 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export default function NearbyMap() {
-  const { listings, isLoading, error, userCoords, gpsPermissionDenied } =
-    useNearbyMapVM();
+  const [mounted, setMounted] = useState(false);
+  const { listings, userCoords, gpsPermissionDenied } = useNearbyMapVM();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
+        <p className="text-muted-foreground">Loading map…</p>
+      </div>
+    );
+  }
 
   if (gpsPermissionDenied) {
     return (
@@ -69,7 +81,7 @@ export default function NearbyMap() {
                 position={[listing.coord_y, listing.coord_x]}
               >
                 <Popup>
-                  <div className="text-sm space-y-1 min-w-[160px]">
+                  <div className="text-sm space-y-1 min-w-40">
                     <p className="font-semibold line-clamp-2">{listing.title}</p>
                     <p className="text-muted-foreground text-xs">
                       {listing.area}
@@ -77,7 +89,7 @@ export default function NearbyMap() {
                     <p className="font-bold text-primary">
                       {formatPrice(listing.price)}/mo
                     </p>
-                    {listing.distance_km !== null && (
+                    {listing.distance_km != null && (
                       <p className="text-xs text-muted-foreground">
                         {listing.distance_km.toFixed(1)} km away
                       </p>

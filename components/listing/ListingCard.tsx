@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Heart, Bed, Bath, Maximize2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { useUIStore } from "@/store/ui.store";
@@ -10,7 +8,6 @@ import { wishlistService } from "@/services/WishlistService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
 import { getThumbnail, formatPrice } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import type { Listing } from "@/types/api";
 
 interface Props {
@@ -51,71 +48,140 @@ export default function ListingCard({ listing, saved = false }: Props) {
     toggleMutation.mutate();
   };
 
+  const specs = [
+    listing.beds != null && `${listing.beds} BR`,
+    listing.baths != null && `${listing.baths} Bath`,
+    listing.size != null && `${listing.size} ft²`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <div
+    <article
       onClick={handleCardClick}
-      className="cursor-pointer rounded-xl overflow-hidden border bg-card shadow-sm hover:shadow-md transition-shadow"
+      className="cursor-pointer"
+      aria-label={`${listing.title}${listing.area ? `, ${listing.area}` : ""}`}
     >
-      <div className="relative h-48">
+      {/* Photo — 4:3, border-radius 14 matching FNWListingCard */}
+      <div
+        className="relative overflow-hidden"
+        style={{ borderRadius: 14, aspectRatio: "4 / 3" }}
+      >
         <Image
           src={getThumbnail(listing.photos)}
           alt={listing.title}
           fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, 50vw"
+          className="object-cover transition-transform duration-300"
+          style={{ transform: "scale(1)" }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLImageElement).style.transform =
+              "scale(1.04)")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLImageElement).style.transform =
+              "scale(1)")
+          }
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
+
+        {/* Heart button — matches design: top:10, right:10, transparent bg */}
         <button
           onClick={handleSave}
-          className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow"
+          className="absolute"
+          style={{
+            top: 10,
+            right: 10,
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 0,
+          }}
           aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
         >
-          <Heart
-            className={cn(
-              "w-4 h-4",
-              saved ? "fill-red-500 text-red-500" : "text-gray-400"
-            )}
-          />
-        </button>
-        <Badge className="absolute bottom-2 left-2 bg-white text-black hover:bg-white">
-          {listing.type}
-        </Badge>
-      </div>
-      <div className="p-3">
-        <p className="font-semibold text-sm line-clamp-1">{listing.title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{listing.area}</p>
-        <p className="text-primary font-bold mt-1">
-          {formatPrice(listing.price)}
-          <span className="text-xs font-normal text-muted-foreground">/mo</span>
-        </p>
-        <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-          {listing.beds !== null && (
-            <span className="flex items-center gap-1">
-              <Bed className="w-3 h-3" />
-              {listing.beds} Beds
-            </span>
-          )}
-          {listing.baths !== null && (
-            <span className="flex items-center gap-1">
-              <Bath className="w-3 h-3" />
-              {listing.baths} Baths
-            </span>
-          )}
-          {listing.size !== null && (
-            <span className="flex items-center gap-1">
-              <Maximize2 className="w-3 h-3" />
-              {listing.size} sqft
-            </span>
-          )}
-        </div>
-        {listing.available_from === null && (
-          <Badge
-            variant="outline"
-            className="mt-2 text-xs text-green-600 border-green-300"
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill={saved ? "#FF6B6B" : "rgba(0,0,0,0.40)"}
+            stroke="#fff"
+            strokeWidth="2"
           >
-            Available Now
-          </Badge>
+            <path
+              d="M12 21s-7-4.5-9.5-9C.5 8 3 4 6.5 4c2 0 3.7 1.2 5.5 3.2C13.8 5.2 15.5 4 17.5 4 21 4 23.5 8 21.5 12c-2.5 4.5-9.5 9-9.5 9z"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {/* Type badge — top:12, left:12 */}
+        {listing.type && (
+          <div
+            className="absolute"
+            style={{
+              top: 12,
+              left: 12,
+              background: "#fff",
+              color: "#1C1C1E",
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.2px",
+              textTransform: "uppercase",
+            }}
+          >
+            {listing.type}
+          </div>
         )}
       </div>
-    </div>
+
+      {/* Details — paddingTop: 10 matching design */}
+      <div style={{ paddingTop: 10 }}>
+        {/* Title row */}
+        <div className="flex justify-between items-baseline" style={{ gap: 8 }}>
+          <p
+            style={{
+              fontSize: 14.5,
+              fontWeight: 600,
+              color: "#1C1C1E",
+              letterSpacing: "-0.1px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              flex: 1,
+              margin: 0,
+            }}
+          >
+            {listing.title}
+          </p>
+        </div>
+
+        {/* Area */}
+        {listing.area && (
+          <p style={{ fontSize: 13, color: "#8A8A8E", marginTop: 2, margin: "2px 0 0" }}>
+            {listing.area}
+          </p>
+        )}
+
+        {/* Specs */}
+        {specs && (
+          <p style={{ fontSize: 13, color: "#8A8A8E", marginTop: 1, margin: "1px 0 0" }}>
+            {specs}
+          </p>
+        )}
+
+        {/* Price */}
+        <p style={{ fontSize: 14, fontWeight: 700, color: "#1C1C1E", marginTop: 6, margin: "6px 0 0" }}>
+          {formatPrice(listing.price)}
+          <span style={{ color: "#5B5B62", fontWeight: 400 }}> / month</span>
+        </p>
+      </div>
+    </article>
   );
 }

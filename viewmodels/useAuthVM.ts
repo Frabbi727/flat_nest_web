@@ -35,13 +35,20 @@ export function useAuthVM() {
     onSuccess: (data) => {
       setTokens(data.access_token, data.refresh_token);
       setUser(data.user);
-      router.push(
-        resolvePostAuthRoute(
-          data.user.role,
-          data.user.is_complete,
-          data.registration_step
-        )
-      );
+      // ?next= set by AuthGate/AuthModal — only same-origin paths, and only
+      // once registration is complete (otherwise resume the register wizard)
+      const next = new URLSearchParams(window.location.search).get("next");
+      if (data.user.is_complete && next?.startsWith("/") && !next.startsWith("//")) {
+        router.push(next);
+      } else {
+        router.push(
+          resolvePostAuthRoute(
+            data.user.role,
+            data.user.is_complete,
+            data.registration_step
+          )
+        );
+      }
     },
     onError: () => {
       toast.error("Invalid email or password");
