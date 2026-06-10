@@ -7,10 +7,11 @@ import { useAuthVM } from "@/viewmodels/useAuthVM";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const { login, loginPending } = useAuthVM();
+  const { login, loginPending, loginWithGoogle } = useAuthVM();
   const {
     register,
     handleSubmit,
@@ -102,7 +103,9 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          <p className="text-sm text-muted-foreground text-center">
+          <GoogleSignInButton onCredential={loginWithGoogle} />
+
+          <p className="text-sm text-muted-foreground text-center mt-7">
             New to FlatNest?{" "}
             <Link href="/register" className="text-primary font-semibold hover:opacity-70 transition-opacity">
               Create an account →

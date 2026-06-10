@@ -2,9 +2,11 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { authService } from "@/services/AuthService";
 import { useAuthStore } from "@/store/auth.store";
+import type { AuthResponse } from "@/types/api";
 import type { RegisterStep1Form } from "@/types/forms";
 
 function resolvePostAuthRoute(
@@ -29,29 +31,46 @@ export function useAuthVM() {
   const isRenter = user?.role === "renter";
   const isRegistrationComplete = user?.is_complete ?? false;
 
+  const onAuthSuccess = (data: AuthResponse) => {
+    setTokens(data.access_token, data.refresh_token);
+    setUser(data.user);
+    // ?next= set by AuthGate/AuthModal — only same-origin paths, and only
+    // once registration is complete (otherwise resume the register wizard)
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (data.user.is_complete && next?.startsWith("/") && !next.startsWith("//")) {
+      router.push(next);
+    } else {
+      router.push(
+        resolvePostAuthRoute(
+          data.user.role,
+          data.user.is_complete,
+          data.registration_step
+        )
+      );
+    }
+  };
+
   const loginMutation = useMutation({
     mutationFn: (creds: { email: string; password: string }) =>
       authService.login(creds),
-    onSuccess: (data) => {
-      setTokens(data.access_token, data.refresh_token);
-      setUser(data.user);
-      // ?next= set by AuthGate/AuthModal — only same-origin paths, and only
-      // once registration is complete (otherwise resume the register wizard)
-      const next = new URLSearchParams(window.location.search).get("next");
-      if (data.user.is_complete && next?.startsWith("/") && !next.startsWith("//")) {
-        router.push(next);
+    onSuccess: onAuthSuccess,
+    onError: (error) => {
+      if (
+        isAxiosError(error) &&
+        error.response?.data?.code === "USE_GOOGLE_SIGN_IN"
+      ) {
+        toast.error("This account uses Google Sign-In.");
       } else {
-        router.push(
-          resolvePostAuthRoute(
-            data.user.role,
-            data.user.is_complete,
-            data.registration_step
-          )
-        );
+        toast.error("Invalid email or password");
       }
     },
+  });
+
+  const loginWithGoogleMutation = useMutation({
+    mutationFn: (idToken: string) => authService.loginWithGoogle(idToken),
+    onSuccess: onAuthSuccess,
     onError: () => {
-      toast.error("Invalid email or password");
+      toast.error("Google sign-in failed. Please try again.");
     },
   });
 
@@ -92,6 +111,8 @@ export function useAuthVM() {
   const logoutMutation = useMutation({
     mutationFn: () => authService.logout(),
     onSettled: () => {
+      // Spec §4.5: also drop the Google session so the account picker reappears
+      window.google?.accounts.id.disableAutoSelect();
       storeLogout();
       router.push("/login");
     },
@@ -107,6 +128,9 @@ export function useAuthVM() {
     login: loginMutation.mutate,
     loginPending: loginMutation.isPending,
     loginError: loginMutation.error?.message ?? null,
+
+    loginWithGoogle: loginWithGoogleMutation.mutate,
+    loginWithGooglePending: loginWithGoogleMutation.isPending,
 
     registerStep1: registerStep1Mutation.mutate,
     registerStep1Pending: registerStep1Mutation.isPending,

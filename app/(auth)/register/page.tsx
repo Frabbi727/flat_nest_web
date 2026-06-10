@@ -7,10 +7,11 @@ import { useAuthVM } from "@/viewmodels/useAuthVM";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import Link from "next/link";
 
 export default function RegisterPage() {
-  const { registerStep1, registerStep1Pending } = useAuthVM();
+  const { registerStep1, registerStep1Pending, loginWithGoogle } = useAuthVM();
   const {
     register,
     handleSubmit,
@@ -83,6 +84,12 @@ export default function RegisterPage() {
             {registerStep1Pending ? "Creating account…" : "Create Account"}
           </Button>
         </form>
+        <div className="flex items-center gap-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <GoogleSignInButton onCredential={loginWithGoogle} />
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link href="/login" className="text-primary font-medium">
