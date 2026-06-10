@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useNearbyMapVM } from "@/viewmodels/useNearbyMapVM";
 import { formatPrice } from "@/lib/utils";
-import Link from "next/link";
+import type { Listing } from "@/types/api";
+
+// react-leaflet 5.0.0's MapContainer breaks under React 19 remounts (error
+// boundary retry, StrictMode): it never resets its internal instance ref, so
+// Leaflet throws "Map container is being reused by another instance" or keeps
+// a destroyed map. This component manages Leaflet imperatively with full
+// cleanup instead, which survives any remount.
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })
   ._getIconUrl;
@@ -16,30 +21,116 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "/leaflet/marker-shadow.png",
 });
 
-function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView([lat, lng], 14);
-  }, [lat, lng, map]);
-  return null;
+// API may serialize numerics as strings; coords are absent entirely when the
+// backend hides them
+function getLatLng(listing: Listing): [number, number] | null {
+  const lat = Number(listing.coord_y);
+  const lng = Number(listing.coord_x);
+  if (
+    listing.coord_y == null ||
+    listing.coord_x == null ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    (lat === 0 && lng === 0)
+  ) {
+    return null;
+  }
+  return [lat, lng];
+}
+
+// Popup built via DOM APIs (not an HTML string) so listing titles can't
+// inject markup
+function buildPopup(listing: Listing): HTMLElement {
+  const root = document.createElement("div");
+  root.style.cssText = "min-width:160px;font-size:13px;line-height:1.4";
+
+  const title = document.createElement("p");
+  title.textContent = listing.title;
+  title.style.cssText = "font-weight:600;margin:0 0 2px";
+  root.appendChild(title);
+
+  if (listing.area) {
+    const area = document.createElement("p");
+    area.textContent = listing.area;
+    area.style.cssText = "color:#8A8A8E;font-size:12px;margin:0";
+    root.appendChild(area);
+  }
+
+  const price = document.createElement("p");
+  price.textContent = `${formatPrice(listing.price)}/mo`;
+  price.style.cssText = "color:#1A6B72;font-weight:700;margin:2px 0";
+  root.appendChild(price);
+
+  const distance = Number(listing.distance_km);
+  if (listing.distance_km != null && Number.isFinite(distance)) {
+    const dist = document.createElement("p");
+    dist.textContent = `${distance.toFixed(1)} km away`;
+    dist.style.cssText = "color:#8A8A8E;font-size:12px;margin:0";
+    root.appendChild(dist);
+  }
+
+  const link = document.createElement("a");
+  link.href = `/listings/${listing.id}`;
+  link.textContent = "View details →";
+  link.style.cssText =
+    "display:block;color:#1A6B72;text-decoration:underline;font-size:12px;margin-top:4px";
+  root.appendChild(link);
+
+  return root;
 }
 
 export default function NearbyMap() {
-  const [mounted, setMounted] = useState(false);
-  const { listings, userCoords, gpsPermissionDenied } = useNearbyMapVM();
+  const { listings, isLoading, userCoords, gpsPermissionDenied } =
+    useNearbyMapVM();
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.LayerGroup | null>(null);
+
+  // Create the map once coords are known; destroy it fully on unmount so a
+  // remount always starts from a clean container
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 0);
-    return () => clearTimeout(timer);
-  }, []);
+    const container = containerRef.current;
+    if (!container || mapRef.current || !userCoords) return;
 
-  if (!mounted) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-        <p className="text-muted-foreground">Loading map…</p>
-      </div>
-    );
-  }
+    const map = L.map(container).setView([userCoords.lat, userCoords.lng], 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    // "You are here" indicator
+    L.circleMarker([userCoords.lat, userCoords.lng], {
+      radius: 8,
+      color: "#fff",
+      weight: 2,
+      fillColor: "#1A6B72",
+      fillOpacity: 1,
+    })
+      .bindTooltip("You are here")
+      .addTo(map);
+
+    markersRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markersRef.current = null;
+    };
+  }, [userCoords]);
+
+  // Sync listing markers whenever data changes
+  useEffect(() => {
+    const group = markersRef.current;
+    if (!group) return;
+    group.clearLayers();
+    for (const listing of listings) {
+      const latLng = getLatLng(listing);
+      if (!latLng) continue;
+      L.marker(latLng).bindPopup(buildPopup(listing)).addTo(group);
+    }
+  }, [listings, userCoords]);
 
   if (gpsPermissionDenied) {
     return (
@@ -60,53 +151,23 @@ export default function NearbyMap() {
     );
   }
 
-  return (
-    <div className="h-[calc(100vh-3.5rem)] w-full">
-      <MapContainer
-        center={[userCoords.lat, userCoords.lng]}
-        zoom={14}
-        className="h-full w-full"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <RecenterMap lat={userCoords.lat} lng={userCoords.lng} />
+  const locatableCount = listings.filter((l) => getLatLng(l) !== null).length;
 
-        {listings.map(
-          (listing) =>
-            listing.coord_x &&
-            listing.coord_y && (
-              <Marker
-                key={listing.id}
-                position={[listing.coord_y, listing.coord_x]}
-              >
-                <Popup>
-                  <div className="text-sm space-y-1 min-w-40">
-                    <p className="font-semibold line-clamp-2">{listing.title}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {listing.area}
-                    </p>
-                    <p className="font-bold text-primary">
-                      {formatPrice(listing.price)}/mo
-                    </p>
-                    {listing.distance_km != null && (
-                      <p className="text-xs text-muted-foreground">
-                        {listing.distance_km.toFixed(1)} km away
-                      </p>
-                    )}
-                    <Link
-                      href={`/listings/${listing.id}`}
-                      className="block text-primary underline text-xs"
-                    >
-                      View details →
-                    </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            )
-        )}
-      </MapContainer>
+  return (
+    <div className="relative h-[calc(100vh-3.5rem)] w-full">
+      <div ref={containerRef} className="h-full w-full" />
+
+      {!isLoading && listings.length === 0 && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-background border rounded-full px-4 py-1.5 text-sm text-muted-foreground shadow">
+          No flats found nearby.
+        </div>
+      )}
+      {!isLoading && listings.length > 0 && locatableCount === 0 && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] bg-background border rounded-full px-4 py-1.5 text-sm text-muted-foreground shadow whitespace-nowrap">
+          {listings.length} {listings.length === 1 ? "flat" : "flats"} found,
+          but map locations are unavailable.
+        </div>
+      )}
     </div>
   );
 }

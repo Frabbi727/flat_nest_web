@@ -2,10 +2,10 @@
 
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import ListingCard from "@/components/listing/ListingCard";
 import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import FilterSheet from "@/components/listing/FilterSheet";
+import PromoBanner from "@/components/banner/PromoBanner";
 import { useListingsVM } from "@/viewmodels/useListingsVM";
 import type { ListingType, Amenity, GeoItem, ListingFacing } from "@/types/api";
 
@@ -135,6 +135,10 @@ export default function HomeClient({
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
+
+      {/* Promo banner — inline widget below search/filters; the dialog
+          variant (logged-in users) is portaled from the same component */}
+      <PromoBanner />
 
       {/* Error */}
       {error && (

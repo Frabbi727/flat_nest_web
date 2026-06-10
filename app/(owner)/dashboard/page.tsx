@@ -35,7 +35,7 @@ import {
 import { useOwnerDashboardVM } from "@/viewmodels/useOwnerDashboardVM";
 import { useChatListVM } from "@/viewmodels/useChatListVM";
 import { usePendingAccessRequestCount } from "@/viewmodels/useAccessRequestsVM";
-import PromoBannerDialog from "@/components/banner/PromoBannerDialog";
+import PromoBanner from "@/components/banner/PromoBanner";
 import { useAuthStore } from "@/store/auth.store";
 import { formatPrice, getThumbnail, resolveImageUrl } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -364,7 +364,6 @@ export default function OwnerDashboard() {
 
   return (
     <div className="flex" style={{ minHeight: "calc(100vh - 57px)" }}>
-      <PromoBannerDialog />
       <Sidebar
         unreadCount={unreadCount}
         accessRequestCount={pendingAccessRequests}
@@ -404,6 +403,9 @@ export default function OwnerDashboard() {
         {error && (
           <p style={{ fontSize: 13, color: "#FF6B6B", marginBottom: 16 }}>{error}</p>
         )}
+
+        {/* Promo banner — inline widget + once-per-session dialog */}
+        <PromoBanner />
 
         {/* KPI Cards */}
         <div className="flex" style={{ gap: 16, marginBottom: 24 }}>

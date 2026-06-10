@@ -34,3 +34,5 @@ export const QUERY_KEYS = {
 // localStorage key holding the id of the banner campaign the user closed.
 // A new campaign (different id) bypasses it — see docs/banner/BANNER_INTEGRATION_GUIDE.md
 export const BANNER_DISMISSED_KEY = "last_dismissed_banner_id";
+// sessionStorage key — the dialog pops at most once per session per campaign id
+export const BANNER_SESSION_SHOWN_KEY = "session_shown_banner_id";

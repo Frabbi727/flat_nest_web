@@ -11,7 +11,6 @@ import ListingCardSkeleton from "@/components/listing/ListingCardSkeleton";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AuthModal from "@/components/auth/AuthModal";
-import PromoBannerDialog from "@/components/banner/PromoBannerDialog";
 
 // Unsplash photos matching the design's data.jsx sample listings
 const HERO_PHOTO =
@@ -631,7 +630,6 @@ export default async function HomePage() {
 
       <Footer />
       <AuthModal />
-      <PromoBannerDialog />
     </>
   );
 }
