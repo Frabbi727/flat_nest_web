@@ -74,10 +74,11 @@ export interface Listing {
   status: "draft" | "pending" | "active" | "rejected" | "rented";
   status_label: string;
   views: number;
+  // Always present so the map can show pointers (backend decision 2026-06-11)
+  coord_x: number | null;
+  coord_y: number | null;
   // Sensitive — omitted by the API unless the viewer owns the listing
   // or their access request was accepted (access_request_status === "accepted")
-  coord_x?: number | null;
-  coord_y?: number | null;
   road?: string | null;
   house_name?: string | null;
   block?: string | null;
