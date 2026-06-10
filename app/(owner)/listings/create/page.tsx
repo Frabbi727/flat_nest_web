@@ -376,6 +376,7 @@ function Step3Location({
   const divisionId = watch("division_id");
   const districtId = watch("district_id");
   const upazilaId = watch("upazila_id");
+  const unionId = watch("union_id");
   const selectedAmenities = watch("amenities") ?? [];
 
   const { data: divisions = [] } = useQuery<GeoItem[]>({
@@ -391,6 +392,11 @@ function Step3Location({
     queryKey: ["geo-upazilas", districtId],
     queryFn: () => api.get(`/geo/upazilas/${districtId}`).then((r) => r.data.data),
     enabled: !!districtId,
+  });
+  const { data: unions = [] } = useQuery<GeoItem[]>({
+    queryKey: ["geo-unions", upazilaId],
+    queryFn: () => api.get(`/geo/unions/${upazilaId}`).then((r) => r.data.data),
+    enabled: !!upazilaId,
   });
   const { data: amenities = [] } = useQuery<Amenity[]>({
     queryKey: ["amenities"],
@@ -448,17 +454,33 @@ function Step3Location({
           </select>
         </Field>
       </div>
-      <Field label="Upazila / Thana">
-        <select
-          style={selectStyle}
-          {...register("upazila_id")}
-          disabled={!districtId}
-          onChange={(e) => setValue("upazila_id", Number(e.target.value))}
-        >
-          <option value="">Select upazila</option>
-          {upazilas.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </select>
-      </Field>
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Upazila / Thana">
+          <select
+            style={selectStyle}
+            {...register("upazila_id")}
+            disabled={!districtId}
+            onChange={(e) => {
+              setValue("upazila_id", Number(e.target.value));
+              setValue("union_id", null);
+            }}
+          >
+            <option value="">Select upazila</option>
+            {upazilas.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </Field>
+        <Field label="Union">
+          <select
+            style={selectStyle}
+            {...register("union_id")}
+            disabled={!upazilaId}
+            onChange={(e) => setValue("union_id", e.target.value ? Number(e.target.value) : null)}
+          >
+            <option value="">Select union</option>
+            {unions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </Field>
+      </div>
 
       {/* Map */}
       <div>
