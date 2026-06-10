@@ -1,15 +1,24 @@
 import { z } from "zod";
 
-// Helper to handle empty numeric inputs gracefully
-const optionalNumber = z.preprocess(
-  (val) => (val === "" || Number.isNaN(Number(val)) ? undefined : Number(val)),
-  z.number().optional()
-);
+// Coerce "" / non-numeric input to undefined so empty fields fail with a
+// clear "required" message instead of a NaN type error.
+const coerceEmpty = (val: unknown) =>
+  val === "" || val == null || Number.isNaN(Number(val))
+    ? undefined
+    : Number(val);
 
-const requiredNumber = z.preprocess(
-  (val) => (val === "" || Number.isNaN(Number(val)) ? undefined : Number(val)),
-  z.number({ required_error: "This field is required", invalid_type_error: "Must be a number" })
-);
+// The casts pin the schema input type to `number` — z.preprocess widens it
+// to `unknown`, which breaks zodResolver's typing against useForm<...>.
+const optionalNumber = z.preprocess(
+  coerceEmpty,
+  z.number().optional()
+) as unknown as z.ZodType<number | undefined, number | undefined>;
+
+const requiredNumber = (message: string) =>
+  z.preprocess(coerceEmpty, z.number({ error: message })) as unknown as z.ZodType<
+    number,
+    number
+  >;
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email"),
@@ -28,10 +37,16 @@ export const registerStep1Schema = z.object({
 
 export const createListingStep1Schema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
-  listing_type_id: requiredNumber,
-  price: requiredNumber.refine((val) => val !== undefined && val >= 1, { message: "Price must be greater than 0" }),
-  beds: requiredNumber.refine((val) => val !== undefined && val >= 0, { message: "Beds is required" }),
-  baths: requiredNumber.refine((val) => val !== undefined && val >= 0, { message: "Baths is required" }),
+  listing_type_id: requiredNumber("Select a listing type"),
+  price: requiredNumber("Price is required").refine((val) => val >= 1, {
+    message: "Price must be greater than 0",
+  }),
+  beds: requiredNumber("Beds is required").refine((val) => val >= 0, {
+    message: "Beds cannot be negative",
+  }),
+  baths: requiredNumber("Baths is required").refine((val) => val >= 0, {
+    message: "Baths cannot be negative",
+  }),
   deposit: optionalNumber,
   size: optionalNumber,
   description: z.string().optional(),
@@ -43,16 +58,16 @@ export const createListingStep1Schema = z.object({
 
 export const locationSchema = z.object({
   area: z.string().min(2, "Area is required"),
-  division_id: requiredNumber,
-  district_id: requiredNumber,
-  upazila_id: requiredNumber,
+  division_id: requiredNumber("Select a division"),
+  district_id: requiredNumber("Select a district"),
+  upazila_id: requiredNumber("Select an upazila"),
   union_id: optionalNumber.nullable(),
   road: z.string().optional(),
   house_name: z.string().optional(),
   block: z.string().optional(),
   section: z.string().optional(),
-  coord_y: requiredNumber,
-  coord_x: requiredNumber,
+  coord_y: requiredNumber("Pick a location on the map"),
+  coord_x: requiredNumber("Pick a location on the map"),
   amenities: z.array(z.number()).optional(),
 });
 
