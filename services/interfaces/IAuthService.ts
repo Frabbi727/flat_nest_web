@@ -1,4 +1,4 @@
-import type { AuthResponse, User } from "@/types/api";
+import type { AuthResponse, RegistrationStepResponse } from "@/types/api";
 import type { RegisterStep1Form } from "@/types/forms";
 
 export interface IAuthService {
@@ -8,8 +8,9 @@ export interface IAuthService {
   }): Promise<AuthResponse>;
   loginWithGoogle(idToken: string): Promise<AuthResponse>;
   registerStep1(data: RegisterStep1Form): Promise<AuthResponse>;
-  registerStep2(role: "owner" | "renter"): Promise<void>;
-  registerStep3(avatar: File): Promise<{ avatar_url: string }>;
+  registerBasic(data: { phone: string; password: string }): Promise<RegistrationStepResponse>;
+  registerStep2(role: "owner" | "renter"): Promise<RegistrationStepResponse>;
+  registerStep3(avatar: File): Promise<RegistrationStepResponse>;
   logout(): Promise<void>;
   refreshToken(refreshToken: string): Promise<{ access_token: string }>;
   deleteAccount(): Promise<void>;

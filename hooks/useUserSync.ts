@@ -34,7 +34,5 @@ export function useUserSync() {
     // a. Check for notification permission
     // b. Call getToken(messaging, { vapidKey: '...' })
     // c. Call userService.registerFcmToken(token)
-    console.log("User Sync: Active for", user.name);
-    
   }, [isAuthenticated, user?.id]);
 }

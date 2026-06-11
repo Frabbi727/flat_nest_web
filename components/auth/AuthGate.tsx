@@ -9,7 +9,7 @@ export default function AuthGate({
 }: {
   children: React.ReactNode;
 }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { isAuthenticated, user } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -18,9 +18,15 @@ export default function AuthGate({
       // render breaks partial prerendering of dynamic routes
       const here = window.location.pathname + window.location.search;
       router.push(`/login?next=${encodeURIComponent(here)}`);
+    } else if (user && !user.is_complete) {
+      if (user.phone === null) {
+        router.push("/register?googleUser=true");
+      } else {
+        router.push(user.role === null ? "/register/role" : "/register/avatar");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || (user && !user.is_complete)) return null;
   return <>{children}</>;
 }

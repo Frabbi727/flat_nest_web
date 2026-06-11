@@ -27,6 +27,7 @@ interface Window {
           options: GsiButtonConfiguration
         ) => void;
         disableAutoSelect: () => void;
+        prompt: () => void;
       };
     };
   };

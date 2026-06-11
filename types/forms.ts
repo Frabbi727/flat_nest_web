@@ -25,15 +25,26 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export const registerStep1Schema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email"),
-  phone: z
-    .string()
-    .min(11, "Phone must be 11 digits")
-    .max(14, "Phone too long"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+export const registerStep1Schema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "Full name is required")
+      .refine(
+        (v) => v.trim().split(/\s+/).filter(Boolean).length >= 2,
+        { message: "Please enter your first and last name" }
+      ),
+    email: z.string().email("Enter a valid email address"),
+    phone: z
+      .string()
+      .regex(/^01[3-9]\d{8}$/, "Enter a valid 11-digit BD number (01XXXXXXXXX)"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((d) => d.password === d.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  });
 
 export const createListingStep1Schema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -81,8 +92,22 @@ export const ownerInfoSchema = z.object({
   preferred_contact: z.enum(["call", "whatsapp", "both"]),
 });
 
+export const googleBasicSchema = z
+  .object({
+    phone: z
+      .string()
+      .regex(/^01[3-9]\d{8}$/, "Enter a valid 11-digit BD number (01XXXXXXXXX)"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    password_confirmation: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((d) => d.password === d.password_confirmation, {
+    message: "Passwords do not match",
+    path: ["password_confirmation"],
+  });
+
 export type LoginForm = z.infer<typeof loginSchema>;
 export type RegisterStep1Form = z.infer<typeof registerStep1Schema>;
+export type GoogleBasicForm = z.infer<typeof googleBasicSchema>;
 export type CreateListingStep1Form = z.infer<typeof createListingStep1Schema>;
 export type LocationForm = z.infer<typeof locationSchema>;
 export type OwnerInfoForm = z.infer<typeof ownerInfoSchema>;

@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 import type { IAuthService } from "@/services/interfaces/IAuthService";
-import type { AuthResponse } from "@/types/api";
+import type { AuthResponse, RegistrationStepResponse } from "@/types/api";
 import type { RegisterStep1Form } from "@/types/forms";
 
 export class AuthService implements IAuthService {
@@ -22,11 +22,17 @@ export class AuthService implements IAuthService {
     return data.data;
   }
 
-  async registerStep2(role: "owner" | "renter"): Promise<void> {
-    await api.patch("/auth/register/details", { role });
+  async registerBasic(payload: { phone: string; password: string }): Promise<RegistrationStepResponse> {
+    const { data } = await api.patch("/auth/register/basic", payload);
+    return data.data;
   }
 
-  async registerStep3(avatar: File): Promise<{ avatar_url: string }> {
+  async registerStep2(role: "owner" | "renter"): Promise<RegistrationStepResponse> {
+    const { data } = await api.patch("/auth/register/details", { role });
+    return data.data;
+  }
+
+  async registerStep3(avatar: File): Promise<RegistrationStepResponse> {
     const form = new FormData();
     form.append("avatar", avatar);
     const { data } = await api.patch("/auth/register/avatar", form, {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginForm } from "@/types/forms";
 import { useAuthVM } from "@/viewmodels/useAuthVM";
@@ -11,12 +12,16 @@ import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import Link from "next/link";
 
 export default function LoginPage() {
-  const { login, loginPending, loginWithGoogle } = useAuthVM();
+  const { login, loginPending, loginWithGoogle, showGoogleHint, resetGoogleHint } = useAuthVM();
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
+
+  const email = useWatch({ control, name: "email" });
+  useEffect(() => { resetGoogleHint(); }, [email]);
 
   return (
     <div className="min-h-screen grid md:grid-cols-2">
@@ -69,32 +74,36 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-baseline">
-                <Label htmlFor="password" className="font-semibold">Password</Label>
-                <a className="text-xs font-semibold text-primary cursor-pointer hover:opacity-70 transition-opacity">
-                  Forgot?
-                </a>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                className="h-12 rounded-xl"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="text-destructive text-xs">{errors.password.message}</p>
-              )}
-            </div>
+            {!showGoogleHint && (
+              <>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-baseline">
+                    <Label htmlFor="password" className="font-semibold">Password</Label>
+                    <a className="text-xs font-semibold text-primary cursor-pointer hover:opacity-70 transition-opacity">
+                      Forgot?
+                    </a>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className="h-12 rounded-xl"
+                    {...register("password")}
+                  />
+                  {errors.password && (
+                    <p className="text-destructive text-xs">{errors.password.message}</p>
+                  )}
+                </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 rounded-full text-base mt-2"
-              disabled={loginPending}
-            >
-              {loginPending ? "Signing in…" : "Sign in"}
-            </Button>
+                <Button
+                  type="submit"
+                  className="w-full h-12 rounded-full text-base mt-2"
+                  disabled={loginPending}
+                >
+                  {loginPending ? "Signing in…" : "Sign in"}
+                </Button>
+              </>
+            )}
           </form>
 
           <div className="flex items-center gap-4 my-7">
@@ -103,7 +112,13 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          <GoogleSignInButton onCredential={loginWithGoogle} />
+          {showGoogleHint && (
+            <p className="text-sm text-center text-primary font-medium mb-3">
+              This email is linked to a Google account. Use the button below to continue.
+            </p>
+          )}
+
+          <GoogleSignInButton onCredential={loginWithGoogle} hint={showGoogleHint} />
 
           <p className="text-sm text-muted-foreground text-center mt-7">
             New to FlatNest?{" "}

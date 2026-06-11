@@ -15,11 +15,13 @@ export default function OwnerGate({
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+    } else if (user && !user.is_complete) {
+      router.push(user.role === null ? "/register/role" : "/register/avatar");
     } else if (user && user.role !== "owner") {
       router.push("/");
     }
   }, [isAuthenticated, user, router]);
 
-  if (!isAuthenticated || user?.role !== "owner") return null;
+  if (!isAuthenticated || !user?.is_complete || user?.role !== "owner") return null;
   return <>{children}</>;
 }

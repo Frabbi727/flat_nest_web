@@ -171,6 +171,11 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RegistrationStepResponse {
+  user: User;
+  registration_step: 1 | 2 | 3;
+}
+
 export interface CreateListingStep1Payload {
   title: string;
   listing_type_id: number;
