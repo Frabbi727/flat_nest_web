@@ -23,6 +23,7 @@ function RegisterForm() {
   const isGoogleUser = searchParams.get("googleUser") === "true";
 
   const {
+    user,
     registerStep1,
     registerStep1Pending,
     registerStep1ApiErrors,
@@ -73,6 +74,22 @@ function RegisterForm() {
             )}
             className="space-y-4"
           >
+            <div className="space-y-1">
+              <Label>Full Name</Label>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-input bg-muted text-sm">
+                <span className="flex-1 text-foreground">{user?.name}</span>
+                <span className="text-xs text-muted-foreground">from Google</span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label>Email Address</Label>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-input bg-muted text-sm">
+                <span className="flex-1 text-foreground">{user?.email}</span>
+                <span className="text-xs text-muted-foreground">from Google</span>
+              </div>
+            </div>
+
             <div className="space-y-1">
               <Label htmlFor="g-phone">Phone Number</Label>
               <div className="flex">
